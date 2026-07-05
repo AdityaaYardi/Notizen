@@ -17,6 +17,11 @@ import streamlit as st
 # ──────────────────────────────────────────────────────────────────────────────
 
 DATA_FILE = Path(__file__).parent / "tasks.json"
+# Custom app logo (optional): looked up in project root, then assets/
+LOGO_CANDIDATES = [
+    Path(__file__).parent / "logo.png",
+    Path(__file__).parent / "assets" / "logo.png",
+]
 
 STATUSES = ["Planned", "Doing", "Finished"]
 PRIORITIES = ["Low", "Medium", "High"]
@@ -35,59 +40,20 @@ PRIORITY_META = {
 
 ICON_CHOICES = ["📝", "📔", "🚩", "📄", "🎨", "🚀", "🔧", "💡", "📣", "🧪", "📊", "🌱"]
 
-DEFAULT_TASKS = [
-    {
-        "id": str(uuid.uuid4()),
-        "title": "Publish release notes",
-        "icon": "📔",
-        "priority": "Low",
-        "tag": "Feature request",
-        "status": "Planned",
-        "due": None,
-        "checklist": [
-            {"text": "Collect changelog entries", "done": False},
-            {"text": "Write summary", "done": False},
-        ],
-    },
-    {
-        "id": str(uuid.uuid4()),
-        "title": "Update help center & FAQ",
-        "icon": "🚩",
-        "priority": "Medium",
-        "tag": "Feature request",
-        "status": "Doing",
-        "due": None,
-        "checklist": [
-            {"text": "Audit outdated articles", "done": True},
-            {"text": "Draft new FAQ entries", "done": False},
-        ],
-    },
-    {
-        "id": str(uuid.uuid4()),
-        "title": "Improve website copy",
-        "icon": "📄",
-        "priority": "High",
-        "tag": "Polish",
-        "status": "Finished",
-        "due": None,
-        "checklist": [],
-    },
-]
-
 # ──────────────────────────────────────────────────────────────────────────────
 # Data layer (JSON persistence)
 # ──────────────────────────────────────────────────────────────────────────────
 
 
 def load_tasks() -> list[dict]:
-    """Load tasks from disk; seed with defaults on first launch."""
+    """Load tasks from disk; the board starts empty on first launch."""
     if not DATA_FILE.exists():
-        save_tasks(DEFAULT_TASKS)
-        return DEFAULT_TASKS
+        save_tasks([])
+        return []
     try:
         return json.loads(DATA_FILE.read_text(encoding="utf-8"))
     except (json.JSONDecodeError, OSError):
-        return DEFAULT_TASKS
+        return []
 
 
 def save_tasks(tasks: list[dict]) -> None:
@@ -180,6 +146,11 @@ html, body, [class*="css"] { font-family: 'Inter', -apple-system, sans-serif; }
     display: flex; align-items: center; gap: .55rem;
 }
 .nz-title .logo { display:inline-block; animation: nz-float 3s ease-in-out infinite; }
+.nz-title img.logo {
+    width: 44px; height: 44px; object-fit: cover;
+    border-radius: 10px; border: 1px solid #2d2d33;
+    box-shadow: 0 2px 8px rgba(0,0,0,.35);
+}
 .nz-sub { color: #8b8b93; font-size: .92rem; margin-bottom: 1.4rem; }
 
 /* ── Animated emoji ────────────────────────────────────── */
@@ -540,11 +511,23 @@ def view_checklist():
 # ──────────────────────────────────────────────────────────────────────────────
 
 
+def logo() -> tuple[str, str]:
+    """Return (page_icon, title_logo_html). Uses logo.png if present,
+    otherwise falls back to the ✅ emoji."""
+    for path in LOGO_CANDIDATES:
+        if path.exists():
+            import base64
+            b64 = base64.b64encode(path.read_bytes()).decode()
+            return str(path), f'<img class="logo" src="data:image/png;base64,{b64}">'
+    return "✅", '<span class="logo">✅</span>'
+
+
 def main():
-    st.set_page_config(page_title="Notizen", page_icon="✅", layout="wide")
+    page_icon, logo_html = logo()
+    st.set_page_config(page_title="Notizen", page_icon=page_icon, layout="wide")
     st.markdown(CSS, unsafe_allow_html=True)
 
-    st.markdown('<div class="nz-title"><span class="logo">✅</span>Notizen</div>'
+    st.markdown(f'<div class="nz-title">{logo_html}Notizen</div>'
                 '<div class="nz-sub">Stay organized with tasks, your way.</div>',
                 unsafe_allow_html=True)
 

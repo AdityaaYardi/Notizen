@@ -10,8 +10,8 @@ A minimalistic, Notion-style Kanban task board built with **Streamlit**. Dark mo
 - Priority badges (Low / Medium / High), category tags, optional due dates
 - Checklists inside tasks with progress bars (tasks auto-finish when all items are done)
 - Filter by status, priority, tag, and search text
-- Tasks persist in a local `tasks.json` file
-- Sample tasks are seeded on first launch
+- Tasks persist in a local `tasks.json` file (board starts empty on first launch)
+- Optional custom logo: drop a `logo.png` in the project root (or `assets/`)
 
 ## Run locally
 
