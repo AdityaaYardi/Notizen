@@ -1,0 +1,50 @@
+[
+  {
+    "id": "8c1bcb8b-3c5a-4eb9-9af4-c5a6dfdc396b",
+    "title": "Publish release notes",
+    "icon": "📔",
+    "priority": "Low",
+    "tag": "Feature request",
+    "status": "Planned",
+    "due": null,
+    "checklist": [
+      {
+        "text": "Collect changelog entries",
+        "done": true
+      },
+      {
+        "text": "Write summary",
+        "done": false
+      }
+    ]
+  },
+  {
+    "id": "be7a5209-a9ed-4b81-b7c6-eb81ae603d1c",
+    "title": "Update help center & FAQ",
+    "icon": "🚩",
+    "priority": "Medium",
+    "tag": "Feature request",
+    "status": "Doing",
+    "due": null,
+    "checklist": [
+      {
+        "text": "Audit outdated articles",
+        "done": true
+      },
+      {
+        "text": "Draft new FAQ entries",
+        "done": false
+      }
+    ]
+  },
+  {
+    "id": "cda4e21a-6975-4ede-8c9c-756f564751da",
+    "title": "Improve website copy",
+    "icon": "📄",
+    "priority": "High",
+    "tag": "Polish",
+    "status": "Finished",
+    "due": null,
+    "checklist": []
+  }
+]
