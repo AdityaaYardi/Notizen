@@ -344,6 +344,10 @@ div[role="radiogroup"] p { font-size: .87rem !important; font-weight: 500; }
     border-radius: 8px !important;
 }
 
+/* Hide the floating "Press Enter to apply" hint — it overlaps typed text
+   in every text input / textarea (dialogs, search, checklist items). */
+[data-testid="InputInstructions"] { display: none !important; }
+
 /* Expanders (checklist view) */
 details[data-testid="stExpander"] {
     background: #202024; border: 1px solid #2d2d33; border-radius: 12px;
@@ -406,14 +410,14 @@ def card_html(task: dict) -> str:
 
 
 @st.dialog("✨ New task")
-def new_task_dialog():
+def new_task_dialog(default_status: str = STATUSES[0]):
     title = st.text_input("Title", placeholder="e.g. Ship dark mode")
     c1, c2 = st.columns(2)
     icon = c1.selectbox("Icon", ICON_CHOICES)
     priority = c2.selectbox("Priority", PRIORITIES, index=1)
     c3, c4 = st.columns(2)
     tag = c3.text_input("Tag", placeholder="e.g. Feature request")
-    status = c4.selectbox("Status", STATUSES)
+    status = c4.selectbox("Status", STATUSES, index=STATUSES.index(default_status))
     use_due = st.checkbox("Set due date")
     due = st.date_input("Due date") if use_due else None
     checklist_raw = st.text_area("Checklist (one item per line)",
@@ -583,7 +587,7 @@ def view_kanban():
                 st.markdown(card_html(task), unsafe_allow_html=True)
                 card_actions(task, f"kb_{status}")
             if st.button("＋ New task", key=f"new_{status}", use_container_width=True):
-                new_task_dialog()
+                new_task_dialog(default_status=status)
 
 
 def view_checklist():
