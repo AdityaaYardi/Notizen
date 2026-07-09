@@ -5,11 +5,13 @@ Run with:
     streamlit run app.py
 """
 
+import base64
 import json
 import uuid
 from datetime import date
 from pathlib import Path
 
+import requests
 import streamlit as st
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -41,14 +43,109 @@ PRIORITY_META = {
 ICON_CHOICES = ["📝", "📔", "🚩", "📄", "🎨", "🚀", "🔧", "💡", "📣", "🧪", "📊", "🌱"]
 
 # ──────────────────────────────────────────────────────────────────────────────
-# Data layer (JSON persistence)
+# Data layer (GitHub-backed JSON persistence, with local-file fallback)
 # ──────────────────────────────────────────────────────────────────────────────
+#
+# If a [github] section exists in Streamlit secrets, tasks.json is read from /
+# written to a GitHub repo via the Contents API, so notes survive app restarts
+# and are shared across devices. Data lives on its own branch (default: "data")
+# so that save-commits do NOT trigger a Streamlit Cloud redeploy.
+#
+# Without secrets, the app falls back to the local tasks.json file.
+
+API = "https://api.github.com"
+
+
+def gh_conf() -> dict | None:
+    """Return GitHub storage config from st.secrets, or None if not set up."""
+    try:
+        gh = st.secrets["github"]
+        return {
+            "token": gh["token"],
+            "repo": gh.get("repo", "AdityaaYardi/Notizen"),
+            "branch": gh.get("branch", "data"),
+            "path": gh.get("path", "tasks.json"),
+        }
+    except (KeyError, FileNotFoundError):
+        return None
+
+
+def _gh_headers(conf: dict) -> dict:
+    return {
+        "Authorization": f"Bearer {conf['token']}",
+        "Accept": "application/vnd.github+json",
+    }
+
+
+def _gh_file_url(conf: dict) -> str:
+    return f"{API}/repos/{conf['repo']}/contents/{conf['path']}"
+
+
+def _gh_ensure_branch(conf: dict) -> None:
+    """Create the data branch off the default branch if it doesn't exist yet."""
+    h = _gh_headers(conf)
+    r = requests.get(f"{API}/repos/{conf['repo']}/git/ref/heads/{conf['branch']}",
+                     headers=h, timeout=10)
+    if r.status_code == 200:
+        return
+    default = requests.get(f"{API}/repos/{conf['repo']}", headers=h,
+                           timeout=10).json()["default_branch"]
+    sha = requests.get(f"{API}/repos/{conf['repo']}/git/ref/heads/{default}",
+                       headers=h, timeout=10).json()["object"]["sha"]
+    requests.post(f"{API}/repos/{conf['repo']}/git/refs", headers=h, timeout=10,
+                  json={"ref": f"refs/heads/{conf['branch']}", "sha": sha})
+
+
+def _gh_load(conf: dict) -> list[dict]:
+    r = requests.get(_gh_file_url(conf), headers=_gh_headers(conf),
+                     params={"ref": conf["branch"]}, timeout=10)
+    if r.status_code == 404:               # branch or file doesn't exist yet
+        _gh_ensure_branch(conf)
+        st.session_state.gh_sha = None
+        return []
+    r.raise_for_status()
+    payload = r.json()
+    st.session_state.gh_sha = payload["sha"]
+    return json.loads(base64.b64decode(payload["content"]).decode("utf-8"))
+
+
+def _gh_save(conf: dict, tasks: list[dict]) -> None:
+    body = {
+        "message": "Update tasks",
+        "content": base64.b64encode(
+            json.dumps(tasks, indent=2, ensure_ascii=False).encode("utf-8")
+        ).decode("ascii"),
+        "branch": conf["branch"],
+    }
+    if st.session_state.get("gh_sha"):
+        body["sha"] = st.session_state.gh_sha
+
+    r = requests.put(_gh_file_url(conf), headers=_gh_headers(conf),
+                     json=body, timeout=10)
+    if r.status_code in (409, 422):
+        # Stale sha (file was edited elsewhere) — refetch sha and retry once.
+        g = requests.get(_gh_file_url(conf), headers=_gh_headers(conf),
+                         params={"ref": conf["branch"]}, timeout=10)
+        if g.status_code == 200:
+            body["sha"] = g.json()["sha"]
+        else:
+            _gh_ensure_branch(conf)
+            body.pop("sha", None)
+        r = requests.put(_gh_file_url(conf), headers=_gh_headers(conf),
+                         json=body, timeout=10)
+    r.raise_for_status()
+    st.session_state.gh_sha = r.json()["content"]["sha"]
 
 
 def load_tasks() -> list[dict]:
-    """Load tasks from disk; the board starts empty on first launch."""
+    """Load tasks from GitHub if configured, otherwise from the local file."""
+    conf = gh_conf()
+    if conf:
+        try:
+            return _gh_load(conf)
+        except Exception as exc:
+            st.warning(f"Couldn't load notes from GitHub ({exc}); using local file.")
     if not DATA_FILE.exists():
-        save_tasks([])
         return []
     try:
         return json.loads(DATA_FILE.read_text(encoding="utf-8"))
@@ -57,7 +154,18 @@ def load_tasks() -> list[dict]:
 
 
 def save_tasks(tasks: list[dict]) -> None:
-    DATA_FILE.write_text(json.dumps(tasks, indent=2, ensure_ascii=False), encoding="utf-8")
+    """Save tasks to GitHub if configured; always keep the local copy too."""
+    conf = gh_conf()
+    if conf:
+        try:
+            _gh_save(conf, tasks)
+        except Exception as exc:
+            st.error(f"Couldn't save notes to GitHub: {exc}")
+    try:
+        DATA_FILE.write_text(json.dumps(tasks, indent=2, ensure_ascii=False),
+                             encoding="utf-8")
+    except OSError:
+        pass  # read-only filesystem (some cloud hosts) — GitHub copy is primary
 
 
 def get_tasks() -> list[dict]:

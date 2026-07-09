@@ -10,7 +10,7 @@ A minimalistic, Notion-style Kanban task board built with **Streamlit**. Dark mo
 - Priority badges (Low / Medium / High), category tags, optional due dates
 - Checklists inside tasks with progress bars (tasks auto-finish when all items are done)
 - Filter by status, priority, tag, and search text
-- Tasks persist in a local `tasks.json` file (board starts empty on first launch)
+- Tasks persist in a local `tasks.json` file, or **sync to your GitHub repo** so notes survive restarts and are shared across devices (see below)
 - Optional custom logo: drop a `logo.png` in the project root (or `assets/`)
 
 ## Run locally
@@ -54,6 +54,33 @@ git push -u origin main
 ```
 
 Tip: don't commit your personal `tasks.json` if you don't want your tasks public — add it to `.gitignore`.
+
+## Persistent notes via GitHub sync
+
+Without this setup the deployed app loses notes on every restart (Streamlit Cloud's filesystem is ephemeral). With it, the app reads/writes `tasks.json` in this repo via the GitHub API — every save is a commit, so you also get full history of your notes.
+
+Data is stored on a separate branch (default `data`), **not** `main` — commits to `main` would trigger a redeploy on Streamlit Cloud; commits to `data` don't. The branch is created automatically on first save.
+
+**Setup (one time, ~2 minutes):**
+
+1. Create a fine-grained personal access token at [github.com/settings/personal-access-tokens](https://github.com/settings/personal-access-tokens):
+   - Repository access: **Only select repositories** → `Notizen`
+   - Permissions: **Contents → Read and write**
+2. On Streamlit Cloud: open your app → **Settings → Secrets** and paste:
+
+   ```toml
+   [github]
+   token = "github_pat_..."
+   repo = "AdityaaYardi/Notizen"
+   branch = "data"
+   path = "tasks.json"
+   ```
+
+3. Reboot the app. Done — notes now persist and sync.
+
+To sync your **local** PC too, copy `.streamlit/secrets.toml.example` to `.streamlit/secrets.toml` and put the same token there (it's gitignored). Without secrets, the app just uses the local `tasks.json` as before.
+
+Notes: if you edit from two devices at the same time, last save wins (the app auto-resolves the conflict). Tokens expire — if saving stops working, generate a new token and update the secret.
 
 ## Hosting options (honest overview)
 

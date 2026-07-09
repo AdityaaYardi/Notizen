@@ -7,3 +7,6 @@ venv/
 # OS
 .DS_Store
 Thumbs.db
+
+# Secrets — never commit your GitHub token
+.streamlit/secrets.toml
