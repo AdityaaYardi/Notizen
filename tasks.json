@@ -8,5 +8,15 @@
     "status": "Planned",
     "due": null,
     "checklist": []
+  },
+  {
+    "id": "75b06f49-b069-4052-8e45-877df9db6452",
+    "title": "Plot the actual robot movement during winding",
+    "icon": "📔",
+    "priority": "High",
+    "tag": "New Feature",
+    "status": "Planned",
+    "due": null,
+    "checklist": []
   }
 ]
