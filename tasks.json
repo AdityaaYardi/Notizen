@@ -18,5 +18,15 @@
     "status": "Planned",
     "due": null,
     "checklist": []
+  },
+  {
+    "id": "242808e3-5441-4d00-9e30-e698d88b32f5",
+    "title": "Read KIT paper on HTS winding and find related papers",
+    "icon": "📝",
+    "priority": "Low",
+    "tag": "Read",
+    "status": "Planned",
+    "due": null,
+    "checklist": []
   }
 ]
