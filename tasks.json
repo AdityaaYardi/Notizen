@@ -47,5 +47,24 @@
         "done": false
       }
     ]
+  },
+  {
+    "id": "b36f36a9-5c9f-4508-aafe-175b80c0d84a",
+    "title": "Get the TCP Position",
+    "icon": "🔧",
+    "priority": "Medium",
+    "tag": "",
+    "status": "Doing",
+    "due": null,
+    "checklist": [
+      {
+        "text": "get the TCP Position of the robot as if the coil has no rotation",
+        "done": false
+      },
+      {
+        "text": "compare these points to normal robot motion (transformed back)",
+        "done": false
+      }
+    ]
   }
 ]
