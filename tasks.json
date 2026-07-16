@@ -28,5 +28,24 @@
     "status": "Planned",
     "due": null,
     "checklist": []
+  },
+  {
+    "id": "c050f45f-4343-46b2-9d13-fe00f30ce7b9",
+    "title": "Servo Configuration",
+    "icon": "🚩",
+    "priority": "Medium",
+    "tag": "Time Calculation",
+    "status": "Doing",
+    "due": null,
+    "checklist": [
+      {
+        "text": "check how much time does 1 Cycle take",
+        "done": false
+      },
+      {
+        "text": "get number of servo requests given in this time period",
+        "done": false
+      }
+    ]
   }
 ]
