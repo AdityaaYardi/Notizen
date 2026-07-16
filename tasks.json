@@ -1,1 +1,12 @@
-[]
+[
+  {
+    "id": "94e142e0-2928-4b25-9d07-2c9b6a063b02",
+    "title": "Create an External Node which can keep watch on real time commands that are given to the robot every mili second and note down how many commands are given for 1 cycle",
+    "icon": "📔",
+    "priority": "High",
+    "tag": "New Feature",
+    "status": "Planned",
+    "due": null,
+    "checklist": []
+  }
+]
