@@ -142,9 +142,13 @@ def load_tasks() -> list[dict]:
     conf = gh_conf()
     if conf:
         try:
-            return _gh_load(conf)
+            tasks = _gh_load(conf)
+            st.session_state.gh_error = None
+            return tasks
         except Exception as exc:
-            st.warning(f"Couldn't load notes from GitHub ({exc}); using local file.")
+            # Stored in session state so main() can show a persistent banner —
+            # a transient st.error() here is wiped by the immediate rerun.
+            st.session_state.gh_error = f"loading failed — {exc}"
     if not DATA_FILE.exists():
         return []
     try:
@@ -159,8 +163,9 @@ def save_tasks(tasks: list[dict]) -> None:
     if conf:
         try:
             _gh_save(conf, tasks)
+            st.session_state.gh_error = None
         except Exception as exc:
-            st.error(f"Couldn't save notes to GitHub: {exc}")
+            st.session_state.gh_error = f"saving failed — {exc}"
     try:
         DATA_FILE.write_text(json.dumps(tasks, indent=2, ensure_ascii=False),
                              encoding="utf-8")
@@ -639,9 +644,24 @@ def main():
     st.set_page_config(page_title="Notizen", page_icon=page_icon, layout="wide")
     st.markdown(CSS, unsafe_allow_html=True)
 
+    sync_note = (
+        '<span style="color:#4dab77;">☁️ Synced to GitHub</span>'
+        if gh_conf() else
+        '<span style="color:#c7a34a;">⚠️ Local only — notes are lost on restart '
+        '(set up GitHub sync, see README)</span>'
+    )
     st.markdown(f'<div class="nz-title">{logo_html}Notizen</div>'
-                '<div class="nz-sub">Stay organized with tasks, your way.</div>',
+                f'<div class="nz-sub">Stay organized with tasks, your way. · {sync_note}</div>',
                 unsafe_allow_html=True)
+
+    if st.session_state.get("gh_error"):
+        st.error(
+            f"⚠️ GitHub sync {st.session_state.gh_error}\n\n"
+            "Notes are NOT being persisted. Common fixes: check the token has "
+            "no extra spaces, was granted *Contents: Read and write* on the "
+            "Notizen repo, and that `repo` in secrets matches exactly. "
+            "401 = bad token · 403 = missing permission · 404 = wrong repo name."
+        )
 
     nav_col, btn_col = st.columns([5, 1])
     with nav_col:
