@@ -59,7 +59,7 @@
     "checklist": [
       {
         "text": "get the TCP Position of the robot as if the coil has no rotation",
-        "done": false
+        "done": true
       },
       {
         "text": "compare these points to normal robot motion (transformed back)",
