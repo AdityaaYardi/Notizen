@@ -66,5 +66,15 @@
         "done": false
       }
     ]
+  },
+  {
+    "id": "51c525c0-4425-40f7-afa8-ac018353d068",
+    "title": "Compare robot movement + time / position (in a line graph)",
+    "icon": "🚩",
+    "priority": "High",
+    "tag": "",
+    "status": "Planned",
+    "due": "2026-07-31",
+    "checklist": []
   }
 ]
