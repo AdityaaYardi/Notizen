@@ -76,5 +76,15 @@
     "status": "Planned",
     "due": "2026-07-31",
     "checklist": []
+  },
+  {
+    "id": "917968ff-122d-4884-be82-ef92831be0ec",
+    "title": "Stunden Buchung @SAP",
+    "icon": "📊",
+    "priority": "High",
+    "tag": "Office",
+    "status": "Planned",
+    "due": "2026-07-22",
+    "checklist": []
   }
 ]
