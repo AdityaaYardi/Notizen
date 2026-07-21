@@ -86,5 +86,20 @@
     "status": "Planned",
     "due": "2026-07-22",
     "checklist": []
+  },
+  {
+    "id": "7e3adaec-9339-4d63-8afd-442e7c53257e",
+    "title": "Explore Freecad Claude MCP",
+    "icon": "🚩",
+    "priority": "High",
+    "tag": "",
+    "status": "Planned",
+    "due": null,
+    "checklist": [
+      {
+        "text": "https://youtu.be/6trAkQY5_kc?si=_gngeDWmEPzlZX4e",
+        "done": false
+      }
+    ]
   }
 ]
