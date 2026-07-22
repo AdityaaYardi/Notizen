@@ -63,7 +63,7 @@
       },
       {
         "text": "compare these points to normal robot motion (transformed back)",
-        "done": false
+        "done": true
       }
     ]
   },
