@@ -98,6 +98,10 @@
     "checklist": [
       {
         "text": "https://youtu.be/6trAkQY5_kc?si=_gngeDWmEPzlZX4e",
+        "done": true
+      },
+      {
+        "text": "installed and tested",
         "done": false
       }
     ]
