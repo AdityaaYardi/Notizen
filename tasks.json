@@ -69,25 +69,6 @@
     "checklist": []
   },
   {
-    "id": "7e3adaec-9339-4d63-8afd-442e7c53257e",
-    "title": "Explore Freecad Claude MCP",
-    "icon": "🚩",
-    "priority": "High",
-    "tag": "",
-    "status": "Finished",
-    "due": null,
-    "checklist": [
-      {
-        "text": "https://youtu.be/6trAkQY5_kc?si=_gngeDWmEPzlZX4e",
-        "done": true
-      },
-      {
-        "text": "installed and tested",
-        "done": true
-      }
-    ]
-  },
-  {
     "id": "f176b778-8e21-4e91-a2d4-5f9d24dc1447",
     "title": "Checkout !! ONSHAPE online CAD application",
     "icon": "🔧",
