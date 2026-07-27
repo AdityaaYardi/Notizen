@@ -77,5 +77,20 @@
     "status": "Planned",
     "due": "2026-07-31",
     "checklist": []
+  },
+  {
+    "id": "75ea61b9-047d-4a33-8be6-096491f8345f",
+    "title": "Get Joystick control working on Real Setup",
+    "icon": "🚩",
+    "priority": "High",
+    "tag": "",
+    "status": "Planned",
+    "due": null,
+    "checklist": [
+      {
+        "text": "check if joynode is capable to control real hardware",
+        "done": false
+      }
+    ]
   }
 ]
