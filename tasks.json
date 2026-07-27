@@ -105,5 +105,15 @@
         "done": true
       }
     ]
+  },
+  {
+    "id": "f176b778-8e21-4e91-a2d4-5f9d24dc1447",
+    "title": "Checkout !! ONSHAPE online CAD application",
+    "icon": "🔧",
+    "priority": "High",
+    "tag": "Skill up",
+    "status": "Planned",
+    "due": "2026-07-31",
+    "checklist": []
   }
 ]
