@@ -19,6 +19,8 @@ import streamlit as st
 # ──────────────────────────────────────────────────────────────────────────────
 
 DATA_FILE = Path(__file__).parent / "tasks.json"
+ROUGH_FILE = Path(__file__).parent / "rough_work.txt"
+ROUGH_WORK_GH_PATH = "rough_work.txt"
 # Custom app logo (optional): looked up in project root, then assets/
 LOGO_CANDIDATES = [
     Path(__file__).parent / "logo.png",
@@ -169,6 +171,87 @@ def save_tasks(tasks: list[dict]) -> None:
     try:
         DATA_FILE.write_text(json.dumps(tasks, indent=2, ensure_ascii=False),
                              encoding="utf-8")
+    except OSError:
+        pass  # read-only filesystem (some cloud hosts) — GitHub copy is primary
+
+
+def _rough_gh_conf() -> dict | None:
+    """Same GitHub repo/branch as tasks, but a separate file for rough notes."""
+    base = gh_conf()
+    if not base:
+        return None
+    conf = dict(base)
+    conf["path"] = ROUGH_WORK_GH_PATH
+    return conf
+
+
+def _gh_load_text(conf: dict, sha_key: str) -> str:
+    r = requests.get(_gh_file_url(conf), headers=_gh_headers(conf),
+                     params={"ref": conf["branch"]}, timeout=10)
+    if r.status_code == 404:
+        _gh_ensure_branch(conf)
+        st.session_state[sha_key] = None
+        return ""
+    r.raise_for_status()
+    payload = r.json()
+    st.session_state[sha_key] = payload["sha"]
+    return base64.b64decode(payload["content"]).decode("utf-8")
+
+
+def _gh_save_text(conf: dict, text: str, sha_key: str, message: str) -> None:
+    body = {
+        "message": message,
+        "content": base64.b64encode(text.encode("utf-8")).decode("ascii"),
+        "branch": conf["branch"],
+    }
+    if st.session_state.get(sha_key):
+        body["sha"] = st.session_state[sha_key]
+
+    r = requests.put(_gh_file_url(conf), headers=_gh_headers(conf),
+                     json=body, timeout=10)
+    if r.status_code in (409, 422):
+        g = requests.get(_gh_file_url(conf), headers=_gh_headers(conf),
+                         params={"ref": conf["branch"]}, timeout=10)
+        if g.status_code == 200:
+            body["sha"] = g.json()["sha"]
+        else:
+            _gh_ensure_branch(conf)
+            body.pop("sha", None)
+        r = requests.put(_gh_file_url(conf), headers=_gh_headers(conf),
+                         json=body, timeout=10)
+    r.raise_for_status()
+    st.session_state[sha_key] = r.json()["content"]["sha"]
+
+
+def load_rough_work() -> str:
+    """Load the Rough Work notepad from GitHub if configured, else local file."""
+    conf = _rough_gh_conf()
+    if conf:
+        try:
+            text = _gh_load_text(conf, "gh_rough_sha")
+            st.session_state.gh_error = None
+            return text
+        except Exception as exc:
+            st.session_state.gh_error = f"loading failed — {exc}"
+    if not ROUGH_FILE.exists():
+        return ""
+    try:
+        return ROUGH_FILE.read_text(encoding="utf-8")
+    except OSError:
+        return ""
+
+
+def save_rough_work(text: str) -> None:
+    """Save the Rough Work notepad to GitHub if configured; always keep a local copy."""
+    conf = _rough_gh_conf()
+    if conf:
+        try:
+            _gh_save_text(conf, text, "gh_rough_sha", "Update rough work")
+            st.session_state.gh_error = None
+        except Exception as exc:
+            st.session_state.gh_error = f"saving failed — {exc}"
+    try:
+        ROUGH_FILE.write_text(text, encoding="utf-8")
     except OSError:
         pass  # read-only filesystem (some cloud hosts) — GitHub copy is primary
 
@@ -357,6 +440,27 @@ div[role="radiogroup"] p { font-size: .87rem !important; font-weight: 500; }
 details[data-testid="stExpander"] {
     background: #202024; border: 1px solid #2d2d33; border-radius: 12px;
 }
+
+/* ── Rough Work notepad — ruled paper look ─────────────── */
+.st-key-roughwork_box textarea {
+    background-color: #1c1c1f !important;
+    background-image: repeating-linear-gradient(
+        to bottom, transparent, transparent 27px, #34343c 28px
+    ) !important;
+    background-attachment: local !important;
+    line-height: 28px !important;
+    padding-top: 6px !important;
+    color: #ececec !important;
+    border: 1px solid #2d2d33 !important;
+    border-radius: 12px !important;
+    font-family: 'Inter', sans-serif !important;
+    resize: vertical;
+}
+.st-key-roughwork_box textarea:focus {
+    border-color: #55555e !important;
+    box-shadow: none !important;
+}
+.st-key-roughwork_box textarea::placeholder { color: #5a5a63; }
 
 hr { border-color:#2d2d33 !important; }
 </style>
@@ -575,10 +679,34 @@ def view_all_tasks():
             card_actions(task, "all")
 
 
+def render_rough_work_column():
+    """Freeform scratchpad column — plain lined notes, not tied to any task."""
+    st.markdown(
+        '<div class="nz-col-head" style="color:#c9a86a;background:rgba(201,168,106,.12);">'
+        '🗒️ Rough Work</div>',
+        unsafe_allow_html=True,
+    )
+    if "rough_work_input" not in st.session_state:
+        st.session_state["rough_work_input"] = load_rough_work()
+
+    def _on_change():
+        save_rough_work(st.session_state["rough_work_input"])
+
+    with st.container(key="roughwork_box"):
+        st.text_area(
+            "Rough work",
+            height=520,
+            label_visibility="collapsed",
+            key="rough_work_input",
+            placeholder="Jot something down…",
+            on_change=_on_change,
+        )
+
+
 def view_kanban():
     tasks = filter_bar(show_status=False)
-    cols = st.columns(3, gap="medium")
-    for col, status in zip(cols, STATUSES):
+    cols = st.columns(4, gap="medium")
+    for col, status in zip(cols[:3], STATUSES):
         meta = STATUS_META[status]
         bucket = [t for t in tasks if t["status"] == status]
         with col:
@@ -593,6 +721,8 @@ def view_kanban():
                 card_actions(task, f"kb_{status}")
             if st.button("＋ New task", key=f"new_{status}", use_container_width=True):
                 new_task_dialog(default_status=status)
+    with cols[3]:
+        render_rough_work_column()
 
 
 def view_checklist():

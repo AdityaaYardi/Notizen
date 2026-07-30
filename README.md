@@ -4,13 +4,14 @@ A minimalistic, Notion-style Kanban task board built with **Streamlit**. Dark mo
 
 ## Features
 
-- **3 Kanban buckets**: Planned → Doing → Finished
+- **3 Kanban buckets**: Planned → Doing → Finished, plus a 4th **Rough Work** scratchpad column
 - **3 views**: ⭐ All Tasks · 🧭 By Status (Kanban) · ✅ Checklist
 - Add / edit / delete tasks, move them between columns, mark as finished
 - Priority badges (Low / Medium / High), category tags, optional due dates
 - Checklists inside tasks with progress bars (tasks auto-finish when all items are done)
+- **Rough Work column**: a free-text notepad next to the board for jotting anything down — not tied to a task, autosaves as you type
 - Filter by status, priority, tag, and search text
-- Tasks persist in a local `tasks.json` file, or **sync to your GitHub repo** so notes survive restarts and are shared across devices (see below)
+- Tasks (and Rough Work notes) persist in local files, or **sync to your GitHub repo** so notes survive restarts and are shared across devices (see below)
 - Optional custom logo: drop a `logo.png` in the project root (or `assets/`)
 
 ## Run locally
@@ -37,7 +38,8 @@ notizen/
 ├── README.md
 ├── .streamlit/
 │   └── config.toml        # Dark theme configuration
-└── tasks.json             # Created automatically; stores your tasks
+├── tasks.json              # Created automatically; stores your tasks
+└── rough_work.txt          # Created automatically; stores your Rough Work notes
 ```
 
 ## Deploy to GitHub
@@ -57,7 +59,7 @@ Tip: don't commit your personal `tasks.json` if you don't want your tasks public
 
 ## Persistent notes via GitHub sync
 
-Without this setup the deployed app loses notes on every restart (Streamlit Cloud's filesystem is ephemeral). With it, the app reads/writes `tasks.json` in this repo via the GitHub API — every save is a commit, so you also get full history of your notes.
+Without this setup the deployed app loses notes on every restart (Streamlit Cloud's filesystem is ephemeral). With it, the app reads/writes `tasks.json` **and** `rough_work.txt` in this repo via the GitHub API — every save is a commit, so you also get full history of your notes.
 
 Data is stored on a separate branch (default `data`), **not** `main` — commits to `main` would trigger a redeploy on Streamlit Cloud; commits to `data` don't. The branch is created automatically on first save.
 
