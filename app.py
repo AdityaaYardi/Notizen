@@ -365,6 +365,15 @@ html, body, [class*="css"] { font-family: 'Inter', -apple-system, sans-serif; }
 }
 .nz-col-count { color:#8b8b93; font-weight:500; margin-left:.15rem; }
 
+/* Rough Work heading — plain centered text, no pill/highlight background */
+.nz-roughwork-head {
+    text-align: center;
+    font-weight: 600;
+    font-size: .95rem;
+    color: #c9a86a;
+    margin-bottom: .7rem;
+}
+
 /* ── Task card ─────────────────────────────────────────── */
 .nz-card {
     background: #202024;
@@ -468,10 +477,10 @@ details[data-testid="stExpander"] {
     border: 1px solid #2d2d33 !important;
     border-radius: 12px !important;
     font-family: 'Kalam', cursive !important;
-    font-size: 26px !important;
-    font-weight: 700 !important;
+    font-size: 22px !important;
+    font-weight: 400 !important;
     letter-spacing: .01em;
-    text-align: center !important;
+    text-align: left !important;
     resize: vertical;
     outline: none !important;
     box-shadow: none !important;
@@ -716,11 +725,8 @@ def view_all_tasks():
 
 def render_rough_work_column():
     """Freeform scratchpad column — plain lined notes, not tied to any task."""
-    st.markdown(
-        '<div class="nz-col-head" style="color:#c9a86a;background:rgba(201,168,106,.12);">'
-        '🗒️ Rough Work</div>',
-        unsafe_allow_html=True,
-    )
+    st.markdown('<div class="nz-roughwork-head">🗒️ Rough Work</div>',
+                unsafe_allow_html=True)
     if "rough_work_input" not in st.session_state:
         st.session_state["rough_work_input"] = load_rough_work()
 
