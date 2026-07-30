@@ -452,48 +452,47 @@ details[data-testid="stExpander"] {
 }
 
 /* ── Rough Work notepad — ruled paper look ─────────────── */
-/* Neutralize Streamlit's default colored focus ring on the wrapper first,
-   so no red/orange highlight box appears around the notepad. */
+/* Kill Streamlit's default colored focus ring everywhere inside this box —
+   catches the wrapper div, the baseweb textarea shell, and the textarea
+   itself, whichever one the theme's accent color actually lands on. */
+.st-key-roughwork_box *,
+.st-key-roughwork_box *:focus,
+.st-key-roughwork_box *:focus-within,
+.st-key-roughwork_box *:focus-visible {
+    outline: none !important;
+    box-shadow: none !important;
+}
 .st-key-roughwork_box [data-baseweb="textarea"] {
     border-color: #2d2d33 !important;
-    box-shadow: none !important;
 }
 .st-key-roughwork_box [data-baseweb="textarea"]:focus-within {
     border-color: #55555e !important;
-    box-shadow: none !important;
 }
 .st-key-roughwork_box textarea {
     background-color: #1c1c1f !important;
     background-image: repeating-linear-gradient(
-        to bottom, transparent, transparent 39px, #34343c 40px
+        to bottom, transparent, transparent 27px, #34343c 28px
     ) !important;
     background-attachment: local !important;
-    background-position: 0 4px !important;
-    line-height: 40px !important;
-    padding-top: 4px !important;
+    line-height: 28px !important;
+    padding-top: 6px !important;
     padding-left: 1rem !important;
     padding-right: 1rem !important;
     color: #ececec !important;
     border: 1px solid #2d2d33 !important;
     border-radius: 12px !important;
-    font-family: 'Kalam', cursive !important;
-    font-size: 22px !important;
+    font-family: 'Inter', -apple-system, sans-serif !important;
+    font-size: 1rem !important;
     font-weight: 400 !important;
-    letter-spacing: .01em;
     text-align: left !important;
     resize: vertical;
-    outline: none !important;
-    box-shadow: none !important;
 }
-.st-key-roughwork_box textarea:focus,
-.st-key-roughwork_box textarea:focus-visible {
+.st-key-roughwork_box textarea:focus {
     border-color: #55555e !important;
-    outline: none !important;
-    box-shadow: none !important;
 }
 .st-key-roughwork_box textarea::placeholder {
     color: #5a5a63;
-    font-family: 'Kalam', cursive !important;
+    font-family: 'Inter', -apple-system, sans-serif !important;
 }
 
 hr { border-color:#2d2d33 !important; }
