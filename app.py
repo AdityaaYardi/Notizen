@@ -443,26 +443,43 @@ details[data-testid="stExpander"] {
 }
 
 /* ── Rough Work notepad — ruled paper look ─────────────── */
+/* Neutralize Streamlit's default colored focus ring on the wrapper first,
+   so no red/orange highlight box appears around the notepad. */
+.st-key-roughwork_box [data-baseweb="textarea"] {
+    border-color: #2d2d33 !important;
+    box-shadow: none !important;
+}
+.st-key-roughwork_box [data-baseweb="textarea"]:focus-within {
+    border-color: #55555e !important;
+    box-shadow: none !important;
+}
 .st-key-roughwork_box textarea {
     background-color: #1c1c1f !important;
     background-image: repeating-linear-gradient(
-        to bottom, transparent, transparent 31px, #34343c 32px
+        to bottom, transparent, transparent 39px, #34343c 40px
     ) !important;
     background-attachment: local !important;
-    line-height: 32px !important;
-    padding-top: 8px !important;
+    background-position: 0 4px !important;
+    line-height: 40px !important;
+    padding-top: 4px !important;
     padding-left: 1rem !important;
+    padding-right: 1rem !important;
     color: #ececec !important;
     border: 1px solid #2d2d33 !important;
     border-radius: 12px !important;
     font-family: 'Kalam', cursive !important;
-    font-size: 17px !important;
+    font-size: 26px !important;
     font-weight: 700 !important;
     letter-spacing: .01em;
+    text-align: center !important;
     resize: vertical;
+    outline: none !important;
+    box-shadow: none !important;
 }
-.st-key-roughwork_box textarea:focus {
+.st-key-roughwork_box textarea:focus,
+.st-key-roughwork_box textarea:focus-visible {
     border-color: #55555e !important;
+    outline: none !important;
     box-shadow: none !important;
 }
 .st-key-roughwork_box textarea::placeholder {
