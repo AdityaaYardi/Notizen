@@ -452,23 +452,10 @@ details[data-testid="stExpander"] {
 }
 
 /* ── Rough Work notepad — ruled paper look ─────────────── */
-/* Kill Streamlit's default colored focus ring everywhere inside this box —
-   catches the wrapper div, the baseweb textarea shell, and the textarea
-   itself, whichever one the theme's accent color actually lands on. */
-.st-key-roughwork_box *,
-.st-key-roughwork_box *:focus,
-.st-key-roughwork_box *:focus-within,
-.st-key-roughwork_box *:focus-visible {
-    outline: none !important;
-    box-shadow: none !important;
-}
-.st-key-roughwork_box [data-baseweb="textarea"] {
-    border-color: #2d2d33 !important;
-}
-.st-key-roughwork_box [data-baseweb="textarea"]:focus-within {
-    border-color: #55555e !important;
-}
-.st-key-roughwork_box textarea {
+/* Target the textarea directly by its accessible name (stable regardless of
+   Streamlit's internal DOM/class-naming, unlike the container-key selectors
+   below) — this is what actually paints the ruled-paper look and font. */
+textarea[aria-label="Rough work"] {
     background-color: #1c1c1f !important;
     background-image: repeating-linear-gradient(
         to bottom, transparent, transparent 27px, #34343c 28px
@@ -486,13 +473,45 @@ details[data-testid="stExpander"] {
     font-weight: 400 !important;
     text-align: left !important;
     resize: vertical;
+    outline: none !important;
+    box-shadow: none !important;
 }
-.st-key-roughwork_box textarea:focus {
-    border-color: #55555e !important;
-}
-.st-key-roughwork_box textarea::placeholder {
+textarea[aria-label="Rough work"]::placeholder {
     color: #5a5a63;
     font-family: 'Inter', -apple-system, sans-serif !important;
+}
+
+/* Kill the blue theme-accent focus ring — Streamlit/BaseWeb can paint it on
+   the textarea itself OR on a parent wrapper div, so cover both. */
+textarea[aria-label="Rough work"]:focus,
+textarea[aria-label="Rough work"]:focus-visible,
+textarea[aria-label="Rough work"]:focus-within {
+    border-color: #55555e !important;
+    outline: none !important;
+    box-shadow: none !important;
+}
+div:has(> textarea[aria-label="Rough work"]),
+div:has(textarea[aria-label="Rough work"]) {
+    outline: none !important;
+    box-shadow: none !important;
+    border-color: #2d2d33 !important;
+}
+div:has(> textarea[aria-label="Rough work"]:focus),
+div:has(textarea[aria-label="Rough work"]:focus) {
+    border-color: #55555e !important;
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+/* Belt-and-braces: also cover via the container(key=...) class, in case the
+   ring lands somewhere the :has() rules above don't reach. */
+.st-key-roughwork_box,
+.st-key-roughwork_box *,
+.st-key-roughwork_box *:focus,
+.st-key-roughwork_box *:focus-within,
+.st-key-roughwork_box *:focus-visible {
+    outline: none !important;
+    box-shadow: none !important;
 }
 
 hr { border-color:#2d2d33 !important; }
