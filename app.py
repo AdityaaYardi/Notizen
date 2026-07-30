@@ -328,12 +328,13 @@ def set_status(task_id: str, status: str):
 CSS = """
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&display=swap');
 
 html, body, [class*="css"] { font-family: 'Inter', -apple-system, sans-serif; }
 
 /* Hide default Streamlit chrome */
 #MainMenu, footer, header { visibility: hidden; }
-.block-container { padding-top: 2.2rem; padding-bottom: 4rem; max-width: 1180px; }
+.block-container { padding-top: 2.2rem; padding-bottom: 4rem; max-width: 1720px; }
 
 /* ── App title ─────────────────────────────────────────── */
 .nz-title {
@@ -445,22 +446,29 @@ details[data-testid="stExpander"] {
 .st-key-roughwork_box textarea {
     background-color: #1c1c1f !important;
     background-image: repeating-linear-gradient(
-        to bottom, transparent, transparent 27px, #34343c 28px
+        to bottom, transparent, transparent 31px, #34343c 32px
     ) !important;
     background-attachment: local !important;
-    line-height: 28px !important;
-    padding-top: 6px !important;
+    line-height: 32px !important;
+    padding-top: 8px !important;
+    padding-left: 1rem !important;
     color: #ececec !important;
     border: 1px solid #2d2d33 !important;
     border-radius: 12px !important;
-    font-family: 'Inter', sans-serif !important;
+    font-family: 'Kalam', cursive !important;
+    font-size: 17px !important;
+    font-weight: 700 !important;
+    letter-spacing: .01em;
     resize: vertical;
 }
 .st-key-roughwork_box textarea:focus {
     border-color: #55555e !important;
     box-shadow: none !important;
 }
-.st-key-roughwork_box textarea::placeholder { color: #5a5a63; }
+.st-key-roughwork_box textarea::placeholder {
+    color: #5a5a63;
+    font-family: 'Kalam', cursive !important;
+}
 
 hr { border-color:#2d2d33 !important; }
 </style>
@@ -634,20 +642,30 @@ def card_actions(task: dict, key_prefix: str):
 # ──────────────────────────────────────────────────────────────────────────────
 
 
-def filter_bar(show_status: bool = True) -> list[dict]:
+def filter_bar(show_status: bool = True, show_tag: bool = True) -> list[dict]:
     """Render Notion-style filter controls and return the filtered task list."""
     tasks = get_tasks()
-    cols = st.columns([2.2, 1.2, 1.2, 1.2] if show_status else [2.6, 1.4, 1.4])
-    search = cols[0].text_input("Search", placeholder="🔍 Search tasks…",
-                                label_visibility="collapsed")
-    f_priority = cols[1].selectbox("Priority", ["All priorities"] + PRIORITIES,
-                                   label_visibility="collapsed")
-    f_tag = cols[2].selectbox("Tag", ["All tags"] + all_tags(),
-                              label_visibility="collapsed")
+
+    ratios = [2.2, 1.2]
+    if show_tag:
+        ratios.append(1.2)
+    if show_status:
+        ratios.append(1.2)
+    cols = st.columns(ratios)
+
+    i = 0
+    search = cols[i].text_input("Search", placeholder="🔍 Search tasks…",
+                                label_visibility="collapsed"); i += 1
+    f_priority = cols[i].selectbox("Priority", ["All priorities"] + PRIORITIES,
+                                   label_visibility="collapsed"); i += 1
+    f_tag = "All tags"
+    if show_tag:
+        f_tag = cols[i].selectbox("Tag", ["All tags"] + all_tags(),
+                                  label_visibility="collapsed"); i += 1
     f_status = "All statuses"
     if show_status:
-        f_status = cols[3].selectbox("Status", ["All statuses"] + STATUSES,
-                                     label_visibility="collapsed")
+        f_status = cols[i].selectbox("Status", ["All statuses"] + STATUSES,
+                                     label_visibility="collapsed"); i += 1
 
     out = tasks
     if search:
@@ -704,8 +722,8 @@ def render_rough_work_column():
 
 
 def view_kanban():
-    tasks = filter_bar(show_status=False)
-    cols = st.columns(4, gap="medium")
+    tasks = filter_bar(show_status=False, show_tag=False)
+    cols = st.columns([1, 1, 1, 2.8], gap="medium")
     for col, status in zip(cols[:3], STATUSES):
         meta = STATUS_META[status]
         bucket = [t for t in tasks if t["status"] == status]
