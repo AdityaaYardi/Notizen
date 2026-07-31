@@ -52,25 +52,31 @@ def profile() -> str:
 
 
 def sync_profile_from_url() -> None:
-    """Read the board from ?board=K|F so each board has its own shareable link."""
+    """Seed the board from ?board=K|F on first load, so each board is linkable.
+
+    Only on first load: after that the switch owns the value (and writes it back
+    to the URL), otherwise a stale query param would fight every toggle.
+    """
+    if st.session_state.get("_profile_synced"):
+        return
     try:
         board = str(st.query_params.get("board", "")).strip().upper()
     except Exception:
         board = ""
     if board not in PROFILES:
-        board = st.session_state.get("profile", DEFAULT_PROFILE)
+        board = DEFAULT_PROFILE
     st.session_state["profile"] = board
+    st.session_state["_profile_synced"] = True
 
 
-def switch_html() -> str:
-    """The K/F switch — an anchor that flips ?board= in the URL."""
-    here, other = profile(), ("F" if profile() == "K" else "K")
-    return (
-        f'<a class="nz-switch{" is-f" if here == "F" else ""}" href="?board={other}" '
-        f'target="_self" title="Switch to {other}\'s board" '
-        f'aria-label="Currently on board {here}. Switch to board {other}.">'
-        f'<span class="nz-knob">{here}</span></a>'
-    )
+def switch_board() -> None:
+    """Flip to the other board — a plain rerun, so the page never reloads."""
+    other = "F" if profile() == "K" else "K"
+    st.session_state["profile"] = other
+    try:                       # keep the URL shareable; harmless if unsupported
+        st.query_params["board"] = other
+    except Exception:
+        pass
 
 
 def _files() -> dict:
@@ -408,6 +414,7 @@ html, body, [class*="css"] { font-family: 'Inter', -apple-system, sans-serif; }
     color: #ececec; margin-bottom: .1rem;
     display: flex; align-items: center; gap: .55rem;
 }
+.nz-title { white-space: nowrap; }
 .nz-title .logo { display:inline-block; animation: nz-float 3s ease-in-out infinite; }
 .nz-title img.logo {
     width: 44px; height: 44px; object-fit: cover;
@@ -418,42 +425,72 @@ html, body, [class*="css"] { font-family: 'Inter', -apple-system, sans-serif; }
 
 /* ── Profile switch (K / F) ────────────────────────────── */
 /* An iOS-style switch: solid orange track, white knob holding the ACTIVE
-   letter in orange — so only one letter is ever visible. It's a plain <a> that
-   flips ?board= in the URL, so none of Streamlit's widget DOM is involved and
-   nothing can override the geometry. */
-.nz-switch {
-    position: relative;
-    display: inline-block;
-    flex: none;
-    width: 46px;
-    height: 24px;
-    margin-left: .45rem;
-    background: #ff7a18;
-    border-radius: 999px;
-    vertical-align: middle;
-    text-decoration: none !important;
-    transition: background .15s ease;
+   letter in orange — so only one letter is ever visible.
+   It's a Streamlit button (a click is a rerun, NOT a page reload), reshaped:
+   the button becomes the track and its label <p> becomes the knob. Absolutely
+   positioning the label keeps it out of flow, so nothing can stretch the
+   track. The container key carries the state, which moves the knob. */
+.st-key-board_switch_K [data-testid="stButton"] button,
+.st-key-board_switch_F [data-testid="stButton"] button,
+.st-key-board_switch_K button,
+.st-key-board_switch_F button {
+    position: relative !important;
+    display: block !important;
+    box-sizing: border-box !important;
+    width: 46px !important;
+    min-width: 46px !important;
+    max-width: 46px !important;
+    height: 24px !important;
+    min-height: 24px !important;
+    max-height: 24px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: #ff7a18 !important;
+    border: none !important;
+    border-radius: 999px !important;
+    box-shadow: none !important;
+    outline: none !important;
 }
-.nz-switch:hover { background: #ff8f3d; }
-.nz-knob {
-    position: absolute;
-    top: 3px;
-    left: 3px;
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    background: #ffffff;
-    color: #ff7a18;
-    font-size: .62rem;
-    font-weight: 700;
-    line-height: 18px;
-    text-align: center;
-    letter-spacing: 0;
-    animation: nz-knob-left .24s cubic-bezier(.4,0,.2,1);
+.st-key-board_switch_K button:hover,
+.st-key-board_switch_F button:hover { background: #ff8f3d !important; }
+/* Inner wrappers must not impose any box of their own. */
+.st-key-board_switch_K button > div,
+.st-key-board_switch_F button > div { display: contents !important; }
+/* The label text is the knob. */
+.st-key-board_switch_K button p,
+.st-key-board_switch_F button p {
+    position: absolute !important;
+    top: 3px !important;
+    left: 3px !important;
+    width: 18px !important;
+    height: 18px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    border-radius: 50% !important;
+    color: #ff7a18 !important;
+    font-size: .62rem !important;
+    font-weight: 700 !important;
+    line-height: 18px !important;
+    text-align: center !important;
+    letter-spacing: 0 !important;
+    transition: left .22s cubic-bezier(.4,0,.2,1);
 }
-.nz-switch.is-f .nz-knob { left: 25px; animation: nz-knob-right .24s cubic-bezier(.4,0,.2,1); }
-@keyframes nz-knob-left  { from { left: 25px } to { left: 3px } }
-@keyframes nz-knob-right { from { left: 3px }  to { left: 25px } }
+.st-key-board_switch_F button p { left: 25px !important; }
+
+/* Header row: shrink both columns to their content so the switch sits right
+   next to the title instead of a fifth of the way across the page. */
+.st-key-nz_header [data-testid="stHorizontalBlock"] {
+    align-items: center !important;
+    flex-wrap: nowrap !important;
+    gap: .6rem !important;
+}
+.st-key-nz_header [data-testid="stColumn"],
+.st-key-nz_header [data-testid="column"] {
+    flex: 0 0 auto !important;
+    width: auto !important;
+    min-width: 0 !important;
+}
 
 /* ── Animated emoji ────────────────────────────────────── */
 @keyframes nz-float { 0%,100% { transform: translateY(0) } 50% { transform: translateY(-4px) } }
@@ -941,8 +978,18 @@ def main():
                        layout="wide")
     st.markdown(CSS, unsafe_allow_html=True)
 
-    st.markdown(f'<div class="nz-title">{logo_html}Notizen{switch_html()}</div>',
-                unsafe_allow_html=True)
+    here = profile()
+    other = "F" if here == "K" else "K"
+    with st.container(key="nz_header"):
+        title_col, switch_col = st.columns([0.16, 0.84], gap="small",
+                                           vertical_alignment="center")
+        with title_col:
+            st.markdown(f'<div class="nz-title">{logo_html}Notizen</div>',
+                        unsafe_allow_html=True)
+        with switch_col:
+            with st.container(key=f"board_switch_{here}"):
+                st.button(here, key="board_switch_btn", on_click=switch_board,
+                          help=f"Switch to {other}'s board")
 
     sync_note = (
         '<span style="color:#4dab77;">☁️ Synced to GitHub</span>'
