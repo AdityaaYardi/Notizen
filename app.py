@@ -452,7 +452,7 @@ html, body, [class*="css"] { font-family: 'Inter', -apple-system, sans-serif; }
     outline: none !important;
     /* Sit the track on the title's baseline rather than on the bottom of the
        title's line box (which hangs below the letters by the descender). */
-    margin-bottom: 20px !important;
+    margin-bottom: 0px !important;
 }
 .st-key-board_switch_K button:hover,
 .st-key-board_switch_F button:hover { background: #ff8f3d !important; }
