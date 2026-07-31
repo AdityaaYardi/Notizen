@@ -18,14 +18,54 @@ import streamlit as st
 # Constants
 # ──────────────────────────────────────────────────────────────────────────────
 
-DATA_FILE = Path(__file__).parent / "tasks.json"
-ROUGH_FILE = Path(__file__).parent / "rough_work.txt"
-ROUGH_WORK_GH_PATH = "rough_work.txt"
+ROOT = Path(__file__).parent
+
 # Custom app logo (optional): looked up in project root, then assets/
 LOGO_CANDIDATES = [
-    Path(__file__).parent / "logo.png",
-    Path(__file__).parent / "assets" / "logo.png",
+    ROOT / "logo.png",
+    ROOT / "assets" / "logo.png",
 ]
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Profiles
+# ──────────────────────────────────────────────────────────────────────────────
+#
+# The app serves two completely independent boards, "K" and "F", switched with
+# the pill toggle next to the title. They share the same app and the same GitHub
+# repo/branch, but each stores its tasks and rough work in its own files, so
+# neither board ever sees the other's data.
+#
+# "K" keeps the original filenames so existing data carries over untouched.
+
+PROFILES = ["K", "F"]
+DEFAULT_PROFILE = "K"
+
+PROFILE_FILES = {
+    "K": {"tasks": "tasks.json",   "rough": "rough_work.txt"},
+    "F": {"tasks": "tasks_f.json", "rough": "rough_work_f.txt"},
+}
+
+
+def profile() -> str:
+    """The board currently being viewed — "K" or "F"."""
+    return st.session_state.get("profile", DEFAULT_PROFILE)
+
+
+def _files() -> dict:
+    return PROFILE_FILES[profile()]
+
+
+def data_file() -> Path:
+    return ROOT / _files()["tasks"]
+
+
+def rough_file() -> Path:
+    return ROOT / _files()["rough"]
+
+
+def _sk(name: str) -> str:
+    """Session-state key namespaced by profile, so K and F never collide."""
+    return f"{name}_{profile()}"
 
 STATUSES = ["Planned", "Doing", "Finished"]
 PRIORITIES = ["Low", "Medium", "High"]
@@ -66,7 +106,9 @@ def gh_conf() -> dict | None:
             "token": gh["token"],
             "repo": gh.get("repo", "AdityaaYardi/Notizen"),
             "branch": gh.get("branch", "data"),
-            "path": gh.get("path", "tasks.json"),
+            # K honours a custom `path` in secrets; F always uses its own file.
+            "path": (gh.get("path", "tasks.json")
+                     if profile() == DEFAULT_PROFILE else _files()["tasks"]),
         }
     except (KeyError, FileNotFoundError):
         return None
@@ -103,11 +145,11 @@ def _gh_load(conf: dict) -> list[dict]:
                      params={"ref": conf["branch"]}, timeout=10)
     if r.status_code == 404:               # branch or file doesn't exist yet
         _gh_ensure_branch(conf)
-        st.session_state.gh_sha = None
+        st.session_state[_sk("gh_sha")] = None
         return []
     r.raise_for_status()
     payload = r.json()
-    st.session_state.gh_sha = payload["sha"]
+    st.session_state[_sk("gh_sha")] = payload["sha"]
     return json.loads(base64.b64decode(payload["content"]).decode("utf-8"))
 
 
@@ -119,8 +161,8 @@ def _gh_save(conf: dict, tasks: list[dict]) -> None:
         ).decode("ascii"),
         "branch": conf["branch"],
     }
-    if st.session_state.get("gh_sha"):
-        body["sha"] = st.session_state.gh_sha
+    if st.session_state.get(_sk("gh_sha")):
+        body["sha"] = st.session_state[_sk("gh_sha")]
 
     r = requests.put(_gh_file_url(conf), headers=_gh_headers(conf),
                      json=body, timeout=10)
@@ -136,7 +178,7 @@ def _gh_save(conf: dict, tasks: list[dict]) -> None:
         r = requests.put(_gh_file_url(conf), headers=_gh_headers(conf),
                          json=body, timeout=10)
     r.raise_for_status()
-    st.session_state.gh_sha = r.json()["content"]["sha"]
+    st.session_state[_sk("gh_sha")] = r.json()["content"]["sha"]
 
 
 def load_tasks() -> list[dict]:
@@ -151,10 +193,10 @@ def load_tasks() -> list[dict]:
             # Stored in session state so main() can show a persistent banner —
             # a transient st.error() here is wiped by the immediate rerun.
             st.session_state.gh_error = f"loading failed — {exc}"
-    if not DATA_FILE.exists():
+    if not data_file().exists():
         return []
     try:
-        return json.loads(DATA_FILE.read_text(encoding="utf-8"))
+        return json.loads(data_file().read_text(encoding="utf-8"))
     except (json.JSONDecodeError, OSError):
         return []
 
@@ -169,8 +211,8 @@ def save_tasks(tasks: list[dict]) -> None:
         except Exception as exc:
             st.session_state.gh_error = f"saving failed — {exc}"
     try:
-        DATA_FILE.write_text(json.dumps(tasks, indent=2, ensure_ascii=False),
-                             encoding="utf-8")
+        data_file().write_text(json.dumps(tasks, indent=2, ensure_ascii=False),
+                               encoding="utf-8")
     except OSError:
         pass  # read-only filesystem (some cloud hosts) — GitHub copy is primary
 
@@ -181,7 +223,7 @@ def _rough_gh_conf() -> dict | None:
     if not base:
         return None
     conf = dict(base)
-    conf["path"] = ROUGH_WORK_GH_PATH
+    conf["path"] = _files()["rough"]
     return conf
 
 
@@ -228,15 +270,15 @@ def load_rough_work() -> str:
     conf = _rough_gh_conf()
     if conf:
         try:
-            text = _gh_load_text(conf, "gh_rough_sha")
+            text = _gh_load_text(conf, _sk("gh_rough_sha"))
             st.session_state.gh_error = None
             return text
         except Exception as exc:
             st.session_state.gh_error = f"loading failed — {exc}"
-    if not ROUGH_FILE.exists():
+    if not rough_file().exists():
         return ""
     try:
-        return ROUGH_FILE.read_text(encoding="utf-8")
+        return rough_file().read_text(encoding="utf-8")
     except OSError:
         return ""
 
@@ -246,24 +288,26 @@ def save_rough_work(text: str) -> None:
     conf = _rough_gh_conf()
     if conf:
         try:
-            _gh_save_text(conf, text, "gh_rough_sha", "Update rough work")
+            _gh_save_text(conf, text, _sk("gh_rough_sha"),
+                          f"Update rough work ({profile()})")
             st.session_state.gh_error = None
         except Exception as exc:
             st.session_state.gh_error = f"saving failed — {exc}"
     try:
-        ROUGH_FILE.write_text(text, encoding="utf-8")
+        rough_file().write_text(text, encoding="utf-8")
     except OSError:
         pass  # read-only filesystem (some cloud hosts) — GitHub copy is primary
 
 
 def get_tasks() -> list[dict]:
-    if "tasks" not in st.session_state:
-        st.session_state.tasks = load_tasks()
-    return st.session_state.tasks
+    key = _sk("tasks")
+    if key not in st.session_state:
+        st.session_state[key] = load_tasks()
+    return st.session_state[key]
 
 
 def persist() -> None:
-    save_tasks(st.session_state.tasks)
+    save_tasks(get_tasks())
 
 
 def find_task(task_id: str) -> dict | None:
@@ -301,7 +345,7 @@ def add_task(title, icon, priority, tag, status, due, checklist_raw):
 
 
 def delete_task(task_id: str):
-    st.session_state.tasks = [t for t in get_tasks() if t["id"] != task_id]
+    st.session_state[_sk("tasks")] = [t for t in get_tasks() if t["id"] != task_id]
     persist()
 
 
@@ -349,6 +393,55 @@ html, body, [class*="css"] { font-family: 'Inter', -apple-system, sans-serif; }
     box-shadow: 0 2px 8px rgba(0,0,0,.35);
 }
 .nz-sub { color: #8b8b93; font-size: .92rem; margin-bottom: 1.4rem; }
+
+/* ── Profile toggle (K / F) ────────────────────────────── */
+/* A grey pill track with a bright-orange thumb behind the selected letter.
+   Scoped to its own container so it doesn't inherit the nav radio styling. */
+.st-key-profile_toggle_box div[role="radiogroup"] {
+    display: inline-flex !important;
+    gap: 0 !important;
+    background: #3a3a42;
+    border: 1px solid #4a4a54;
+    border-radius: 999px;
+    padding: 3px;
+    width: fit-content;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,.35);
+}
+.st-key-profile_toggle_box div[role="radiogroup"] label {
+    background: transparent !important;
+    border: none !important;
+    border-radius: 999px !important;
+    padding: .26rem 1.15rem !important;
+    margin: 0 !important;
+    min-width: 46px;
+    justify-content: center;
+    transition: background .18s ease, box-shadow .18s ease;
+}
+.st-key-profile_toggle_box div[role="radiogroup"] label:hover {
+    background: rgba(255,255,255,.07) !important;
+}
+.st-key-profile_toggle_box div[role="radiogroup"] label:has(input:checked) {
+    background: #ff7a18 !important;
+    box-shadow: 0 2px 10px rgba(255,122,24,.45);
+}
+.st-key-profile_toggle_box div[role="radiogroup"] label:has(input:checked):hover {
+    background: #ff8a33 !important;
+}
+.st-key-profile_toggle_box div[role="radiogroup"] p {
+    font-weight: 700 !important;
+    font-size: .95rem !important;
+    color: #ffffff !important;
+    letter-spacing: .04em;
+}
+.st-key-profile_toggle_box div[role="radiogroup"] label:not(:has(input:checked)) p {
+    color: rgba(255,255,255,.72) !important;
+}
+.st-key-profile_toggle_box,
+.st-key-profile_toggle_box * { outline: none !important; box-shadow: none !important; }
+.st-key-profile_toggle_box div[role="radiogroup"] { box-shadow: inset 0 1px 3px rgba(0,0,0,.35) !important; }
+.st-key-profile_toggle_box div[role="radiogroup"] label:has(input:checked) {
+    box-shadow: 0 2px 10px rgba(255,122,24,.45) !important;
+}
 
 /* ── Animated emoji ────────────────────────────────────── */
 @keyframes nz-float { 0%,100% { transform: translateY(0) } 50% { transform: translateY(-4px) } }
@@ -745,18 +838,19 @@ def render_rough_work_column():
     """Freeform scratchpad column — plain lined notes, not tied to any task."""
     st.markdown('<div class="nz-roughwork-head">🗒️ Rough Work</div>',
                 unsafe_allow_html=True)
-    if "rough_work_input" not in st.session_state:
-        st.session_state["rough_work_input"] = load_rough_work()
+    key = _sk("rough_work_input")
+    if key not in st.session_state:
+        st.session_state[key] = load_rough_work()
 
     def _on_change():
-        save_rough_work(st.session_state["rough_work_input"])
+        save_rough_work(st.session_state[key])
 
     with st.container(key="roughwork_box"):
         st.text_area(
             "Rough work",
             height=520,
             label_visibility="collapsed",
-            key="rough_work_input",
+            key=key,
             placeholder="Jot something down…",
             on_change=_on_change,
         )
@@ -830,8 +924,25 @@ def logo() -> tuple[str, str]:
 
 def main():
     page_icon, logo_html = logo()
-    st.set_page_config(page_title="Notizen", page_icon=page_icon, layout="wide")
+    st.set_page_config(page_title=f"Notizen · {profile()}", page_icon=page_icon,
+                       layout="wide")
     st.markdown(CSS, unsafe_allow_html=True)
+
+    # Title + profile toggle side by side; subtitle spans the full width below.
+    title_col, toggle_col = st.columns([0.2, 0.8], vertical_alignment="center")
+    with title_col:
+        st.markdown(f'<div class="nz-title">{logo_html}Notizen</div>',
+                    unsafe_allow_html=True)
+    with toggle_col:
+        with st.container(key="profile_toggle_box"):
+            st.radio(
+                "Board",
+                PROFILES,
+                key="profile",
+                horizontal=True,
+                label_visibility="collapsed",
+                help="Switch between the K and F boards — each has its own tasks.",
+            )
 
     sync_note = (
         '<span style="color:#4dab77;">☁️ Synced to GitHub</span>'
@@ -839,9 +950,12 @@ def main():
         '<span style="color:#c7a34a;">⚠️ Local only — notes are lost on restart '
         '(set up GitHub sync, see README)</span>'
     )
-    st.markdown(f'<div class="nz-title">{logo_html}Notizen</div>'
-                f'<div class="nz-sub">Stay organized with tasks, your way. · {sync_note}</div>',
-                unsafe_allow_html=True)
+    st.markdown(
+        f'<div class="nz-sub">Stay organized with tasks, your way. · '
+        f'<span style="color:#ff7a18;font-weight:600;">{profile()}\'s board</span> '
+        f'· {sync_note}</div>',
+        unsafe_allow_html=True,
+    )
 
     if st.session_state.get("gh_error"):
         st.error(
