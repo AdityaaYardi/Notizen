@@ -394,54 +394,72 @@ html, body, [class*="css"] { font-family: 'Inter', -apple-system, sans-serif; }
 }
 .nz-sub { color: #8b8b93; font-size: .92rem; margin-bottom: 1.4rem; }
 
-/* ── Profile toggle (K / F) ────────────────────────────── */
-/* A grey pill track with a bright-orange thumb behind the selected letter.
-   Scoped to its own container so it doesn't inherit the nav radio styling. */
+/* ── Profile switch (K / F) ────────────────────────────── */
+/* An iOS-style switch: solid orange track, white knob that slides left↔right,
+   with the ACTIVE letter (orange, bold) drawn inside the knob — so only one
+   letter is ever visible. The knob is a ::after on the radiogroup itself, so
+   the position change animates as a real slide.
+   The two Streamlit radio labels become invisible full-size hit targets; the
+   *unchecked* one sits on top, so a click anywhere flips to the other board. */
 .st-key-profile_toggle_box div[role="radiogroup"] {
-    display: inline-flex !important;
+    position: relative;
+    display: block !important;
+    width: 46px;
+    height: 24px;
+    padding: 0 !important;
     gap: 0 !important;
-    background: #3a3a42;
-    border: 1px solid #4a4a54;
-    border-radius: 999px;
-    padding: 3px;
-    width: fit-content;
-    box-shadow: inset 0 1px 3px rgba(0,0,0,.35);
+    background: #ff7a18 !important;
+    border: none !important;
+    border-radius: 999px !important;
+    cursor: pointer;
 }
+/* The knob — starts at K (left), slides right when F is checked. */
+.st-key-profile_toggle_box div[role="radiogroup"]::after {
+    content: "K";
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #ffffff;
+    color: #ff7a18;
+    font-weight: 700;
+    font-size: .63rem;
+    line-height: 1;
+    letter-spacing: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    z-index: 2;
+    transition: left .22s cubic-bezier(.4,0,.2,1);
+}
+.st-key-profile_toggle_box div[role="radiogroup"]:has(label:last-of-type input:checked)::after,
+.st-key-profile_toggle_box div[role="radiogroup"]:has(label:nth-of-type(2) input:checked)::after {
+    content: "F";
+    left: 25px;
+}
+/* Labels: invisible, cover the whole track. */
 .st-key-profile_toggle_box div[role="radiogroup"] label {
+    position: absolute !important;
+    top: 0; left: 0; right: 0; bottom: 0;
+    margin: 0 !important;
+    padding: 0 !important;
+    min-width: 0 !important;
     background: transparent !important;
     border: none !important;
     border-radius: 999px !important;
-    padding: .26rem 1.15rem !important;
-    margin: 0 !important;
-    min-width: 46px;
-    justify-content: center;
-    transition: background .18s ease, box-shadow .18s ease;
+    opacity: 0;
+    cursor: pointer;
+    z-index: 1;
 }
-.st-key-profile_toggle_box div[role="radiogroup"] label:hover {
-    background: rgba(255,255,255,.07) !important;
-}
-.st-key-profile_toggle_box div[role="radiogroup"] label:has(input:checked) {
-    background: #ff7a18 !important;
-    box-shadow: 0 2px 10px rgba(255,122,24,.45);
-}
-.st-key-profile_toggle_box div[role="radiogroup"] label:has(input:checked):hover {
-    background: #ff8a33 !important;
-}
-.st-key-profile_toggle_box div[role="radiogroup"] p {
-    font-weight: 700 !important;
-    font-size: .95rem !important;
-    color: #ffffff !important;
-    letter-spacing: .04em;
-}
-.st-key-profile_toggle_box div[role="radiogroup"] label:not(:has(input:checked)) p {
-    color: rgba(255,255,255,.72) !important;
+/* The option you're NOT on takes the clicks, so one tap toggles boards. */
+.st-key-profile_toggle_box div[role="radiogroup"] label:not(:has(input:checked)) {
+    z-index: 3;
 }
 .st-key-profile_toggle_box,
 .st-key-profile_toggle_box * { outline: none !important; box-shadow: none !important; }
-.st-key-profile_toggle_box div[role="radiogroup"] { box-shadow: inset 0 1px 3px rgba(0,0,0,.35) !important; }
-.st-key-profile_toggle_box div[role="radiogroup"] label:has(input:checked) {
-    box-shadow: 0 2px 10px rgba(255,122,24,.45) !important;
-}
 
 /* ── Animated emoji ────────────────────────────────────── */
 @keyframes nz-float { 0%,100% { transform: translateY(0) } 50% { transform: translateY(-4px) } }
@@ -929,7 +947,8 @@ def main():
     st.markdown(CSS, unsafe_allow_html=True)
 
     # Title + profile toggle side by side; subtitle spans the full width below.
-    title_col, toggle_col = st.columns([0.2, 0.8], vertical_alignment="center")
+    title_col, toggle_col = st.columns([0.16, 0.84], gap="small",
+                                       vertical_alignment="center")
     with title_col:
         st.markdown(f'<div class="nz-title">{logo_html}Notizen</div>',
                     unsafe_allow_html=True)
