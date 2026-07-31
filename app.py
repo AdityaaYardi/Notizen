@@ -450,6 +450,9 @@ html, body, [class*="css"] { font-family: 'Inter', -apple-system, sans-serif; }
     border-radius: 999px !important;
     box-shadow: none !important;
     outline: none !important;
+    /* Sit the track on the title's baseline rather than on the bottom of the
+       title's line box (which hangs below the letters by the descender). */
+    margin-bottom: 8px !important;
 }
 .st-key-board_switch_K button:hover,
 .st-key-board_switch_F button:hover { background: #ff8f3d !important; }
@@ -481,7 +484,7 @@ html, body, [class*="css"] { font-family: 'Inter', -apple-system, sans-serif; }
 /* Header row: shrink both columns to their content so the switch sits right
    next to the title instead of a fifth of the way across the page. */
 .st-key-nz_header [data-testid="stHorizontalBlock"] {
-    align-items: center !important;
+    align-items: flex-end !important;
     flex-wrap: nowrap !important;
     gap: .6rem !important;
 }
@@ -982,7 +985,7 @@ def main():
     other = "F" if here == "K" else "K"
     with st.container(key="nz_header"):
         title_col, switch_col = st.columns([0.16, 0.84], gap="small",
-                                           vertical_alignment="center")
+                                           vertical_alignment="bottom")
         with title_col:
             st.markdown(f'<div class="nz-title">{logo_html}Notizen</div>',
                         unsafe_allow_html=True)
