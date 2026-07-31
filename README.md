@@ -38,9 +38,25 @@ notizen/
 ├── README.md
 ├── .streamlit/
 │   └── config.toml        # Dark theme configuration
-├── tasks.json              # Created automatically; stores your tasks
-└── rough_work.txt          # Created automatically; stores your Rough Work notes
+├── tasks.json              # Created automatically; stores K's tasks
+├── rough_work.txt          # Created automatically; stores K's Rough Work notes
+├── tasks_f.json            # Created automatically; stores F's tasks
+└── rough_work_f.txt        # Created automatically; stores F's Rough Work notes
 ```
+
+## Two boards: K and F
+
+The orange switch next to the title flips between two completely separate
+boards. Each has its own tasks, checklists and Rough Work notes — neither board
+can see the other's data.
+
+The board also lives in the URL, so each one is directly linkable:
+
+- `https://your-app-url/` or `?board=K` → K's board
+- `https://your-app-url/?board=F` → F's board
+
+Note this is a view switch, not a login: anyone with the link can flip between
+both boards.
 
 ## Deploy to GitHub
 

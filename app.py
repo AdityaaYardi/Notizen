@@ -51,6 +51,28 @@ def profile() -> str:
     return st.session_state.get("profile", DEFAULT_PROFILE)
 
 
+def sync_profile_from_url() -> None:
+    """Read the board from ?board=K|F so each board has its own shareable link."""
+    try:
+        board = str(st.query_params.get("board", "")).strip().upper()
+    except Exception:
+        board = ""
+    if board not in PROFILES:
+        board = st.session_state.get("profile", DEFAULT_PROFILE)
+    st.session_state["profile"] = board
+
+
+def switch_html() -> str:
+    """The K/F switch — an anchor that flips ?board= in the URL."""
+    here, other = profile(), ("F" if profile() == "K" else "K")
+    return (
+        f'<a class="nz-switch{" is-f" if here == "F" else ""}" href="?board={other}" '
+        f'target="_self" title="Switch to {other}\'s board" '
+        f'aria-label="Currently on board {here}. Switch to board {other}.">'
+        f'<span class="nz-knob">{here}</span></a>'
+    )
+
+
 def _files() -> dict:
     return PROFILE_FILES[profile()]
 
@@ -395,27 +417,25 @@ html, body, [class*="css"] { font-family: 'Inter', -apple-system, sans-serif; }
 .nz-sub { color: #8b8b93; font-size: .92rem; margin-bottom: 1.4rem; }
 
 /* ── Profile switch (K / F) ────────────────────────────── */
-/* An iOS-style switch: solid orange track, white knob that slides left↔right,
-   with the ACTIVE letter (orange, bold) drawn inside the knob — so only one
-   letter is ever visible. The knob is a ::after on the radiogroup itself, so
-   the position change animates as a real slide.
-   The two Streamlit radio labels become invisible full-size hit targets; the
-   *unchecked* one sits on top, so a click anywhere flips to the other board. */
-.st-key-profile_toggle_box div[role="radiogroup"] {
+/* An iOS-style switch: solid orange track, white knob holding the ACTIVE
+   letter in orange — so only one letter is ever visible. It's a plain <a> that
+   flips ?board= in the URL, so none of Streamlit's widget DOM is involved and
+   nothing can override the geometry. */
+.nz-switch {
     position: relative;
-    display: block !important;
+    display: inline-block;
+    flex: none;
     width: 46px;
     height: 24px;
-    padding: 0 !important;
-    gap: 0 !important;
-    background: #ff7a18 !important;
-    border: none !important;
-    border-radius: 999px !important;
-    cursor: pointer;
+    margin-left: .45rem;
+    background: #ff7a18;
+    border-radius: 999px;
+    vertical-align: middle;
+    text-decoration: none !important;
+    transition: background .15s ease;
 }
-/* The knob — starts at K (left), slides right when F is checked. */
-.st-key-profile_toggle_box div[role="radiogroup"]::after {
-    content: "K";
+.nz-switch:hover { background: #ff8f3d; }
+.nz-knob {
     position: absolute;
     top: 3px;
     left: 3px;
@@ -424,42 +444,16 @@ html, body, [class*="css"] { font-family: 'Inter', -apple-system, sans-serif; }
     border-radius: 50%;
     background: #ffffff;
     color: #ff7a18;
+    font-size: .62rem;
     font-weight: 700;
-    font-size: .63rem;
-    line-height: 1;
+    line-height: 18px;
+    text-align: center;
     letter-spacing: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    pointer-events: none;
-    z-index: 2;
-    transition: left .22s cubic-bezier(.4,0,.2,1);
+    animation: nz-knob-left .24s cubic-bezier(.4,0,.2,1);
 }
-.st-key-profile_toggle_box div[role="radiogroup"]:has(label:last-of-type input:checked)::after,
-.st-key-profile_toggle_box div[role="radiogroup"]:has(label:nth-of-type(2) input:checked)::after {
-    content: "F";
-    left: 25px;
-}
-/* Labels: invisible, cover the whole track. */
-.st-key-profile_toggle_box div[role="radiogroup"] label {
-    position: absolute !important;
-    top: 0; left: 0; right: 0; bottom: 0;
-    margin: 0 !important;
-    padding: 0 !important;
-    min-width: 0 !important;
-    background: transparent !important;
-    border: none !important;
-    border-radius: 999px !important;
-    opacity: 0;
-    cursor: pointer;
-    z-index: 1;
-}
-/* The option you're NOT on takes the clicks, so one tap toggles boards. */
-.st-key-profile_toggle_box div[role="radiogroup"] label:not(:has(input:checked)) {
-    z-index: 3;
-}
-.st-key-profile_toggle_box,
-.st-key-profile_toggle_box * { outline: none !important; box-shadow: none !important; }
+.nz-switch.is-f .nz-knob { left: 25px; animation: nz-knob-right .24s cubic-bezier(.4,0,.2,1); }
+@keyframes nz-knob-left  { from { left: 25px } to { left: 3px } }
+@keyframes nz-knob-right { from { left: 3px }  to { left: 25px } }
 
 /* ── Animated emoji ────────────────────────────────────── */
 @keyframes nz-float { 0%,100% { transform: translateY(0) } 50% { transform: translateY(-4px) } }
@@ -941,27 +935,14 @@ def logo() -> tuple[str, str]:
 
 
 def main():
+    sync_profile_from_url()
     page_icon, logo_html = logo()
     st.set_page_config(page_title=f"Notizen · {profile()}", page_icon=page_icon,
                        layout="wide")
     st.markdown(CSS, unsafe_allow_html=True)
 
-    # Title + profile toggle side by side; subtitle spans the full width below.
-    title_col, toggle_col = st.columns([0.16, 0.84], gap="small",
-                                       vertical_alignment="center")
-    with title_col:
-        st.markdown(f'<div class="nz-title">{logo_html}Notizen</div>',
-                    unsafe_allow_html=True)
-    with toggle_col:
-        with st.container(key="profile_toggle_box"):
-            st.radio(
-                "Board",
-                PROFILES,
-                key="profile",
-                horizontal=True,
-                label_visibility="collapsed",
-                help="Switch between the K and F boards — each has its own tasks.",
-            )
+    st.markdown(f'<div class="nz-title">{logo_html}Notizen{switch_html()}</div>',
+                unsafe_allow_html=True)
 
     sync_note = (
         '<span style="color:#4dab77;">☁️ Synced to GitHub</span>'
