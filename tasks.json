@@ -91,11 +91,6 @@
     "tag": "",
     "status": "Planned",
     "due": null,
-    "checklist": [
-      {
-        "text": "send documents to acornia",
-        "done": false
-      }
-    ]
+    "checklist": []
   }
 ]
