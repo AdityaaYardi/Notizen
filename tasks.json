@@ -82,5 +82,20 @@
     "status": "Doing",
     "due": null,
     "checklist": []
+  },
+  {
+    "id": "3a5734e4-71ec-4cd8-a781-a82d94cd003e",
+    "title": "Send Documents to Acornia",
+    "icon": "🚀",
+    "priority": "High",
+    "tag": "",
+    "status": "Planned",
+    "due": null,
+    "checklist": [
+      {
+        "text": "send documents to acornia",
+        "done": false
+      }
+    ]
   }
 ]
