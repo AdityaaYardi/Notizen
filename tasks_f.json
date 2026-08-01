@@ -1,0 +1,17 @@
+[
+  {
+    "id": "2ef1e51b-5482-47d6-a4a9-8f528bf0678d",
+    "title": "Excel with joint resistance calculation",
+    "icon": "📊",
+    "priority": "High",
+    "tag": "#MasterThesis",
+    "status": "Planned",
+    "due": null,
+    "checklist": [
+      {
+        "text": "DigiKey for In",
+        "done": false
+      }
+    ]
+  }
+]
