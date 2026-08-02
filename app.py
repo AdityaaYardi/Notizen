@@ -98,16 +98,18 @@ def _sk(name: str) -> str:
 STATUSES = ["Planned", "Doing", "Finished"]
 PRIORITIES = ["Low", "Medium", "High"]
 
+# Semantic status colours, aligned with the iOS dark system palette declared
+# as CSS tokens in the stylesheet below (--nz-accent / --nz-green / etc.).
 STATUS_META = {
-    "Planned":  {"emoji": "🗂️", "color": "#8b8b93", "bg": "rgba(139,139,147,.12)"},
-    "Doing":    {"emoji": "🔵", "color": "#5b9bd5", "bg": "rgba(91,155,213,.12)"},
-    "Finished": {"emoji": "🟢", "color": "#4dab77", "bg": "rgba(77,171,119,.12)"},
+    "Planned":  {"emoji": "🗂️", "color": "#9a9aa3", "bg": "rgba(154,154,163,.12)"},
+    "Doing":    {"emoji": "🔵", "color": "#0a84ff", "bg": "rgba(10,132,255,.14)"},
+    "Finished": {"emoji": "🟢", "color": "#30d158", "bg": "rgba(48,209,88,.14)"},
 }
 
 PRIORITY_META = {
-    "Low":    {"color": "#7a9e7e", "bg": "rgba(122,158,126,.15)"},
-    "Medium": {"color": "#c7a34a", "bg": "rgba(199,163,74,.15)"},
-    "High":   {"color": "#d0716f", "bg": "rgba(208,113,111,.15)"},
+    "Low":    {"color": "#30d158", "bg": "rgba(48,209,88,.14)"},
+    "Medium": {"color": "#ff9f0a", "bg": "rgba(255,159,10,.14)"},
+    "High":   {"color": "#ff453a", "bg": "rgba(255,69,58,.14)"},
 }
 
 ICON_CHOICES = ["📝", "📔", "🚩", "📄", "🎨", "🚀", "🔧", "💡", "📣", "🧪", "📊", "🌱"]
@@ -400,28 +402,70 @@ def set_status(task_id: str, status: str):
 CSS = """
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&display=swap');
 
-html, body, [class*="css"] { font-family: 'Inter', -apple-system, sans-serif; }
+/* ── Design tokens ─────────────────────────────────────── */
+:root {
+    /* Surfaces — layered, hairline translucent borders (not solid grey) */
+    --nz-bg:        #0f0f11;
+    --nz-surface:   #1a1a1e;
+    --nz-surface-2: #212127;
+    --nz-border:    rgba(255,255,255,.09);
+    --nz-border-hi: rgba(255,255,255,.18);
+
+    /* Text */
+    --nz-text:   #f2f2f4;
+    --nz-text-2: #9a9aa3;
+
+    /* Brand mark (the K/F switch) + one interactive accent,
+       then semantic status colours only (iOS dark system palette). */
+    --nz-brand:  #ff7a18;
+    --nz-brand-2:#ff8f3d;
+    --nz-accent: #0a84ff;
+    --nz-green:  #30d158;
+    --nz-orange: #ff9f0a;
+    --nz-red:    #ff453a;
+    --nz-purple: #bf5af2;
+
+    /* Radius — one scale */
+    --r-sm: 10px;  --r-md: 14px;  --r-lg: 18px;  --r-pill: 999px;
+
+    /* Motion */
+    --ease: cubic-bezier(.32,.72,0,1);
+    --dur:  220ms;
+}
+
+html, body, [class*="css"] {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text',
+                 'Inter', 'Segoe UI', sans-serif;
+    -webkit-font-smoothing: antialiased;
+}
 
 /* Hide default Streamlit chrome */
 #MainMenu, footer, header { visibility: hidden; }
 .block-container { padding-top: 2.2rem; padding-bottom: 4rem; max-width: 1720px; }
+[data-testid="stAppViewContainer"] { background: var(--nz-bg); }
 
 /* ── App title ─────────────────────────────────────────── */
 .nz-title {
-    font-size: 2.1rem; font-weight: 700; letter-spacing: -.02em;
-    color: #ececec; margin-bottom: .1rem;
+    font-size: clamp(1.9rem, 4vw, 2.4rem);
+    font-weight: 700; letter-spacing: -.03em;
+    color: var(--nz-text); margin-bottom: .1rem;
     display: flex; align-items: center; gap: .55rem;
+    white-space: nowrap;
+    animation: nz-rise .5s var(--ease) both .06s;
 }
-.nz-title { white-space: nowrap; }
-.nz-title .logo { display:inline-block; animation: nz-float 3s ease-in-out infinite; }
+.nz-title .logo {
+    display: inline-block;
+    animation: nz-stamp .6s var(--ease) both;
+    transition: transform .3s var(--ease);
+}
+.nz-title .logo:hover { transform: scale(1.08) rotate(-4deg); }
 .nz-title img.logo {
     width: 44px; height: 44px; object-fit: cover;
-    border-radius: 10px; border: 1px solid #2d2d33;
+    border-radius: var(--r-md); border: 1px solid var(--nz-border);
     box-shadow: 0 2px 8px rgba(0,0,0,.35);
 }
-.nz-sub { color: #8b8b93; font-size: .92rem; margin-bottom: 1.4rem; }
+.nz-sub { color: var(--nz-text-2); font-size: .92rem; margin-bottom: 1.4rem; }
 
 /* ── Profile switch (K / F) ────────────────────────────── */
 /* An iOS-style switch: solid orange track, white knob holding the ACTIVE
@@ -445,9 +489,9 @@ html, body, [class*="css"] { font-family: 'Inter', -apple-system, sans-serif; }
     max-height: 24px !important;
     padding: 0 !important;
     margin: 0 !important;
-    background: #ff7a18 !important;
+    background: var(--nz-brand) !important;
     border: none !important;
-    border-radius: 999px !important;
+    border-radius: var(--r-pill) !important;
     box-shadow: none !important;
     outline: none !important;
     /* Sit the track on the title's baseline rather than on the bottom of the
@@ -455,7 +499,11 @@ html, body, [class*="css"] { font-family: 'Inter', -apple-system, sans-serif; }
     margin-bottom: 0px !important;
 }
 .st-key-board_switch_K button:hover,
-.st-key-board_switch_F button:hover { background: #ff8f3d !important; }
+.st-key-board_switch_F button:hover { background: var(--nz-brand-2) !important; }
+/* The switch is already pill-shaped; don't let the global button press-scale
+   fight the knob transition. */
+.st-key-board_switch_K button:active,
+.st-key-board_switch_F button:active { transform: none !important; }
 /* Inner wrappers must not impose any box of their own. */
 .st-key-board_switch_K button > div,
 .st-key-board_switch_F button > div { display: contents !important; }
@@ -471,7 +519,7 @@ html, body, [class*="css"] { font-family: 'Inter', -apple-system, sans-serif; }
     padding: 0 !important;
     background: #ffffff !important;
     border-radius: 50% !important;
-    color: #ff7a18 !important;
+    color: var(--nz-brand) !important;
     font-size: .62rem !important;
     font-weight: 700 !important;
     line-height: 18px !important;
@@ -482,7 +530,16 @@ html, body, [class*="css"] { font-family: 'Inter', -apple-system, sans-serif; }
 .st-key-board_switch_F button p { left: 25px !important; }
 
 /* Header row: shrink both columns to their content so the switch sits right
-   next to the title instead of a fifth of the way across the page. */
+   next to the title instead of a fifth of the way across the page.
+   Frosted glass so content scrolls under it (Apple HIG translucency). */
+.st-key-nz_header {
+    position: sticky; top: 0; z-index: 100;
+    padding: .6rem 0 .7rem;
+    background: rgba(15,15,17,.72);
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    border-bottom: 1px solid var(--nz-border);
+}
 .st-key-nz_header [data-testid="stHorizontalBlock"] {
     align-items: flex-end !important;
     flex-wrap: nowrap !important;
@@ -495,96 +552,166 @@ html, body, [class*="css"] { font-family: 'Inter', -apple-system, sans-serif; }
     min-width: 0 !important;
 }
 
-/* ── Animated emoji ────────────────────────────────────── */
-@keyframes nz-float { 0%,100% { transform: translateY(0) } 50% { transform: translateY(-4px) } }
-@keyframes nz-pop   { 0% { transform: scale(1) } 50% { transform: scale(1.25) rotate(-8deg) } 100% { transform: scale(1) } }
-.nz-emoji { display:inline-block; transition: transform .25s ease; }
-.nz-card:hover .nz-emoji { animation: nz-pop .5s ease; }
+/* ── Motion ────────────────────────────────────────────── */
+/* Entrance animations, not decorative loops. The logo "stamps" in once, the
+   heading rises under it, and cards stagger in. Nothing runs forever. */
+@keyframes nz-stamp {
+    0%   { opacity: 0; transform: scale(.6) rotate(-14deg); filter: blur(6px); }
+    60%  { opacity: 1; transform: scale(1.08) rotate(4deg);  filter: blur(0); }
+    100% { opacity: 1; transform: scale(1) rotate(0);        filter: blur(0); }
+}
+@keyframes nz-rise {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes nz-pop { 0% { transform: scale(1) } 50% { transform: scale(1.25) rotate(-8deg) } 100% { transform: scale(1) } }
+.nz-emoji { display:inline-block; transition: transform .25s var(--ease); }
+.nz-card:hover .nz-emoji { animation: nz-pop .5s var(--ease); }
+
+/* Honour the OS "reduce motion" setting — required by Apple HIG and WCAG. */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
 
 /* ── Kanban column ─────────────────────────────────────── */
 .nz-col-head {
     display:flex; align-items:center; gap:.5rem;
-    padding: .35rem .7rem; border-radius: 8px;
+    padding: .35rem .8rem; border-radius: var(--r-pill);
     font-weight: 600; font-size: .86rem; width: fit-content;
     margin-bottom: .7rem;
 }
-.nz-col-count { color:#8b8b93; font-weight:500; margin-left:.15rem; }
+.nz-col-count { color:var(--nz-text-2); font-weight:500; margin-left:.15rem; }
 
 /* Rough Work heading — plain centered text, no pill/highlight background */
 .nz-roughwork-head {
     text-align: center;
     font-weight: 600;
     font-size: .95rem;
-    color: #c9a86a;
+    color: var(--nz-text-2);
     margin-bottom: .7rem;
 }
 
 /* ── Task card ─────────────────────────────────────────── */
 .nz-card {
-    background: #202024;
-    border: 1px solid #2d2d33;
-    border-radius: 12px;
-    padding: .85rem .95rem .7rem;
+    background: var(--nz-surface);
+    border: 1px solid var(--nz-border);
+    border-radius: var(--r-lg);
+    padding: .9rem 1rem .75rem;
     margin-bottom: .6rem;
     box-shadow: 0 1px 2px rgba(0,0,0,.25);
-    transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
-    cursor: grab;
+    /* Cards aren't draggable — don't promise a grab handle. */
+    cursor: default;
+    animation: nz-rise .35s var(--ease) both;
+    transition: transform var(--dur) var(--ease),
+                box-shadow var(--dur) var(--ease),
+                border-color var(--dur) var(--ease);
 }
 .nz-card:hover {
     transform: translateY(-2px);
-    border-color: #3d3d45;
+    border-color: var(--nz-border-hi);
     box-shadow: 0 6px 18px rgba(0,0,0,.35);
 }
 .nz-card-title {
-    font-weight: 600; font-size: .95rem; color: #ececec;
+    font-weight: 600; font-size: .95rem; color: var(--nz-text);
+    letter-spacing: -.01em;
     margin-bottom: .55rem; display:flex; gap:.45rem; align-items:center;
     line-height: 1.3;
 }
 .nz-badges { display:flex; flex-wrap:wrap; gap:.35rem; margin-bottom:.3rem; }
 .nz-badge {
     font-size: .72rem; font-weight: 600;
-    padding: .13rem .55rem; border-radius: 999px;
+    padding: .13rem .55rem; border-radius: var(--r-pill);
     letter-spacing: .01em;
 }
-.nz-meta { color:#8b8b93; font-size:.75rem; display:flex; gap:.8rem; margin-top:.25rem; }
-.nz-progress-wrap { background:#2d2d33; border-radius:99px; height:5px; margin-top:.5rem; overflow:hidden; }
-.nz-progress-bar { background:#4dab77; height:100%; border-radius:99px; transition: width .3s ease; }
+.nz-meta { color:var(--nz-text-2); font-size:.75rem; display:flex; gap:.8rem; margin-top:.25rem; }
+.nz-progress-wrap { background:rgba(255,255,255,.12); border-radius:var(--r-pill); height:5px; margin-top:.5rem; overflow:hidden; }
+.nz-progress-bar { background:var(--nz-green); height:100%; border-radius:var(--r-pill); transition: width .3s var(--ease); }
 
 /* ── Streamlit widget restyling ────────────────────────── */
 /* Pill-style radio nav */
 div[role="radiogroup"] { gap: .3rem !important; }
 div[role="radiogroup"] label {
-    background: #202024 !important;
-    border: 1px solid #2d2d33 !important;
-    border-radius: 999px !important;
-    padding: .28rem .95rem !important;
-    transition: all .15s ease;
+    background: rgba(255,255,255,.06) !important;
+    border: 1px solid var(--nz-border) !important;
+    border-radius: var(--r-pill) !important;
+    padding: .4rem 1.05rem !important;
+    min-height: 38px !important;
+    display: flex !important; align-items: center !important;
+    cursor: pointer !important;
+    transition: background var(--dur) var(--ease),
+                border-color var(--dur) var(--ease),
+                transform 120ms var(--ease);
 }
-div[role="radiogroup"] label:hover { border-color:#4a4a52 !important; background:#26262b !important; }
+div[role="radiogroup"] label:hover {
+    border-color: var(--nz-border-hi) !important;
+    background: rgba(255,255,255,.10) !important;
+}
+div[role="radiogroup"] label:active { transform: scale(.96); }
 div[role="radiogroup"] label:has(input:checked) {
-    background: #33333a !important; border-color:#55555e !important;
+    background: rgba(255,255,255,.16) !important;
+    border-color: var(--nz-border-hi) !important;
 }
 div[role="radiogroup"] label > div:first-child { display: none !important; }  /* hide radio dot */
 div[role="radiogroup"] p { font-size: .87rem !important; font-weight: 500; }
 
-/* Buttons */
+/* Buttons — pill-shaped, 38px min height (touch target), iOS press-scale */
 .stButton > button, [data-testid="stPopoverButton"] {
-    background: transparent; border: 1px solid #2d2d33;
-    border-radius: 8px; color: #b9b9c0;
-    font-size: .8rem; padding: .18rem .6rem;
-    transition: all .15s ease;
+    background: rgba(255,255,255,.06);
+    border: 1px solid var(--nz-border);
+    border-radius: var(--r-pill);
+    color: var(--nz-text-2);
+    font-size: .84rem;
+    font-weight: 590;
+    min-height: 38px;
+    padding: .5rem 1.05rem;
+    cursor: pointer;
+    transition: background var(--dur) var(--ease),
+                border-color var(--dur) var(--ease),
+                color var(--dur) var(--ease),
+                transform 120ms var(--ease);
 }
 .stButton > button:hover, [data-testid="stPopoverButton"]:hover {
-    border-color: #55555e; color: #ececec; background: #26262b;
+    border-color: var(--nz-border-hi); color: var(--nz-text);
+    background: rgba(255,255,255,.10);
+}
+.stButton > button:active, [data-testid="stPopoverButton"]:active {
+    transform: scale(.96);
 }
 .stButton > button[kind="primary"] {
-    background: #3b82f6; border-color: #3b82f6; color: white; font-weight: 600;
+    background: var(--nz-accent); border-color: transparent;
+    color: #fff; font-weight: 600;
+    box-shadow: 0 4px 14px rgba(10,132,255,.30);
 }
-.stButton > button[kind="primary"]:hover { background:#2f6fd6; }
+.stButton > button[kind="primary"]:hover { background:#0071e3; }
+.stButton > button:disabled, .stButton > button:disabled:hover {
+    opacity: .38; cursor: not-allowed; transform: none;
+    background: rgba(255,255,255,.04); border-color: var(--nz-border);
+}
 
 /* Inputs */
-.stTextInput input, .stDateInput input, .stTextArea textarea {
-    border-radius: 8px !important;
+.stTextInput input, .stDateInput input, .stTextArea textarea,
+[data-baseweb="select"] > div {
+    border-radius: var(--r-md) !important;
+}
+.stTextInput input, .stDateInput input { min-height: 38px !important; }
+
+/* ── Focus rings ───────────────────────────────────────── */
+/* :focus-visible is the keyboard-only signal — it must always be visible.
+   Only the mouse-click :focus ring is suppressed elsewhere in this sheet. */
+.stButton > button:focus-visible,
+[data-testid="stPopoverButton"]:focus-visible,
+textarea:focus-visible,
+input:focus-visible,
+[data-baseweb="select"]:focus-visible,
+div[role="radiogroup"] label:has(input:focus-visible),
+summary:focus-visible {
+    outline: 2px solid var(--nz-accent) !important;
+    outline-offset: 2px !important;
 }
 
 /* Hide the floating "Press Enter to apply" hint — it overlaps typed text
@@ -593,7 +720,8 @@ div[role="radiogroup"] p { font-size: .87rem !important; font-weight: 500; }
 
 /* Expanders (checklist view) */
 details[data-testid="stExpander"] {
-    background: #202024; border: 1px solid #2d2d33; border-radius: 12px;
+    background: var(--nz-surface); border: 1px solid var(--nz-border);
+    border-radius: var(--r-lg);
 }
 
 /* ── Rough Work notepad — ruled paper look ─────────────── */
@@ -601,19 +729,20 @@ details[data-testid="stExpander"] {
    Streamlit's internal DOM/class-naming, unlike the container-key selectors
    below) — this is what actually paints the ruled-paper look and font. */
 textarea[aria-label="Rough work"] {
-    background-color: #1c1c1f !important;
+    background-color: var(--nz-surface) !important;
     background-image: repeating-linear-gradient(
-        to bottom, transparent, transparent 27px, #34343c 28px
+        to bottom, transparent, transparent 27px, rgba(255,255,255,.12) 28px
     ) !important;
     background-attachment: local !important;
     line-height: 28px !important;
     padding-top: 6px !important;
     padding-left: 1rem !important;
     padding-right: 1rem !important;
-    color: #ececec !important;
-    border: 1px solid #2d2d33 !important;
-    border-radius: 12px !important;
-    font-family: 'Inter', -apple-system, sans-serif !important;
+    color: var(--nz-text) !important;
+    border: 1px solid var(--nz-border) !important;
+    border-radius: var(--r-lg) !important;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text',
+                 'Inter', 'Segoe UI', sans-serif !important;
     font-size: 1rem !important;
     font-weight: 400 !important;
     text-align: left !important;
@@ -622,44 +751,49 @@ textarea[aria-label="Rough work"] {
     box-shadow: none !important;
 }
 textarea[aria-label="Rough work"]::placeholder {
-    color: #5a5a63;
-    font-family: 'Inter', -apple-system, sans-serif !important;
+    color: #6b6b74;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text',
+                 'Inter', 'Segoe UI', sans-serif !important;
 }
 
 /* Kill the blue theme-accent focus ring — Streamlit/BaseWeb can paint it on
-   the textarea itself OR on a parent wrapper div, so cover both. */
+   the textarea itself OR on a parent wrapper div, so cover both.
+   NOTE: :focus-visible is deliberately NOT suppressed here — it is the only
+   cue a keyboard user gets. It is re-asserted in the focus-rings block above. */
 textarea[aria-label="Rough work"]:focus,
-textarea[aria-label="Rough work"]:focus-visible,
 textarea[aria-label="Rough work"]:focus-within {
-    border-color: #55555e !important;
-    outline: none !important;
+    border-color: var(--nz-border-hi) !important;
     box-shadow: none !important;
 }
 div:has(> textarea[aria-label="Rough work"]),
 div:has(textarea[aria-label="Rough work"]) {
     outline: none !important;
     box-shadow: none !important;
-    border-color: #2d2d33 !important;
+    border-color: var(--nz-border) !important;
 }
 div:has(> textarea[aria-label="Rough work"]:focus),
 div:has(textarea[aria-label="Rough work"]:focus) {
-    border-color: #55555e !important;
+    border-color: var(--nz-border-hi) !important;
     outline: none !important;
     box-shadow: none !important;
 }
 
 /* Belt-and-braces: also cover via the container(key=...) class, in case the
-   ring lands somewhere the :has() rules above don't reach. */
+   ring lands somewhere the :has() rules above don't reach. Scoped to the
+   wrapper divs only — the textarea keeps its keyboard focus ring. */
 .st-key-roughwork_box,
-.st-key-roughwork_box *,
-.st-key-roughwork_box *:focus,
-.st-key-roughwork_box *:focus-within,
-.st-key-roughwork_box *:focus-visible {
+.st-key-roughwork_box div,
+.st-key-roughwork_box div:focus,
+.st-key-roughwork_box div:focus-within {
     outline: none !important;
     box-shadow: none !important;
 }
+.st-key-roughwork_box textarea:focus-visible {
+    outline: 2px solid var(--nz-accent) !important;
+    outline-offset: 2px !important;
+}
 
-hr { border-color:#2d2d33 !important; }
+hr { border-color: var(--nz-border) !important; }
 </style>
 """
 
@@ -671,13 +805,17 @@ def badge(text: str, color: str, bg: str, icon: str = "") -> str:
     )
 
 
-def card_html(task: dict) -> str:
-    """Render a task card as HTML."""
+def card_html(task: dict, i: int = 0) -> str:
+    """Render a task card as HTML.
+
+    `i` is the card's position in its column, used to stagger the entrance
+    animation (35ms apart, capped so long columns don't crawl in).
+    """
     p = PRIORITY_META[task["priority"]]
     s = STATUS_META[task["status"]]
     badges = badge(task["priority"], p["color"], p["bg"])
     if task.get("tag"):
-        badges += badge(task["tag"], "#a58fd0", "rgba(165,143,208,.15)", "💬")
+        badges += badge(task["tag"], "var(--nz-purple)", "rgba(191,90,242,.14)", "💬")
 
     meta_bits = [f'{s["emoji"]} {task["status"]}']
     if task.get("due"):
@@ -701,7 +839,7 @@ def card_html(task: dict) -> str:
 
     meta = "".join(f"<span>{m}</span>" for m in meta_bits)
     return (
-        f'<div class="nz-card">'
+        f'<div class="nz-card" style="animation-delay:{min(i, 12) * 35}ms">'
         f'<div class="nz-card-title"><span class="nz-emoji">{task["icon"]}</span>{task["title"]}</div>'
         f'<div class="nz-badges">{badges}</div>'
         f'<div class="nz-meta">{meta}</div>'
@@ -876,13 +1014,13 @@ def filter_bar(show_status: bool = True, show_tag: bool = True) -> list[dict]:
 def view_all_tasks():
     tasks = filter_bar(show_status=True)
     if not tasks:
-        st.markdown('<p style="color:#8b8b93;">No tasks match your filters. 🌙</p>',
+        st.markdown('<p style="color:var(--nz-text-2);">No tasks match your filters. 🌙</p>',
                     unsafe_allow_html=True)
         return
     cols = st.columns(3)
     for i, task in enumerate(tasks):
         with cols[i % 3]:
-            st.markdown(card_html(task), unsafe_allow_html=True)
+            st.markdown(card_html(task, i), unsafe_allow_html=True)
             card_actions(task, "all")
 
 
@@ -921,8 +1059,8 @@ def view_kanban():
                 f'<span class="nz-col-count">{len(bucket)}</span></div>',
                 unsafe_allow_html=True,
             )
-            for task in bucket:
-                st.markdown(card_html(task), unsafe_allow_html=True)
+            for i, task in enumerate(bucket):
+                st.markdown(card_html(task, i), unsafe_allow_html=True)
                 card_actions(task, f"kb_{status}")
             if st.button("＋ New task", key=f"new_{status}", use_container_width=True):
                 new_task_dialog(default_status=status)
@@ -933,7 +1071,7 @@ def view_kanban():
 def view_checklist():
     tasks = [t for t in get_tasks() if t.get("checklist")]
     if not tasks:
-        st.markdown('<p style="color:#8b8b93;">No tasks have checklists yet. '
+        st.markdown('<p style="color:var(--nz-text-2);">No tasks have checklists yet. '
                     'Add checklist items when creating or editing a task. ✍️</p>',
                     unsafe_allow_html=True)
         return
@@ -995,14 +1133,14 @@ def main():
                           help=f"Switch to {other}'s board")
 
     sync_note = (
-        '<span style="color:#4dab77;">☁️ Synced to GitHub</span>'
+        '<span style="color:var(--nz-green);">☁️ Synced to GitHub</span>'
         if gh_conf() else
-        '<span style="color:#c7a34a;">⚠️ Local only — notes are lost on restart '
+        '<span style="color:var(--nz-orange);">⚠️ Local only — notes are lost on restart '
         '(set up GitHub sync, see README)</span>'
     )
     st.markdown(
         f'<div class="nz-sub">Stay organized with tasks, your way. · '
-        f'<span style="color:#ff7a18;font-weight:600;">{profile()}\'s board</span> '
+        f'<span style="color:var(--nz-brand);font-weight:600;">{profile()}\'s board</span> '
         f'· {sync_note}</div>',
         unsafe_allow_html=True,
     )
