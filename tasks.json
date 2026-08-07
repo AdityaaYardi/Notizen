@@ -102,5 +102,15 @@
     "status": "Planned",
     "due": null,
     "checklist": []
+  },
+  {
+    "id": "b6219c58-f7ad-4fe9-a86c-f4c8906c80c2",
+    "title": "Get beer for trip",
+    "icon": "🎨",
+    "priority": "Medium",
+    "tag": "",
+    "status": "Doing",
+    "due": null,
+    "checklist": []
   }
 ]
