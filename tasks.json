@@ -124,19 +124,19 @@
     "checklist": [
       {
         "text": "Change Title",
-        "done": false
+        "done": true
       },
       {
         "text": "Include Plants from the Map",
-        "done": false
+        "done": true
       },
       {
         "text": "Process - > Tool cost , New (Reconditioning, Best Practice, Benchmark)",
-        "done": false
+        "done": true
       },
       {
         "text": "Contact page - Members from Hard turning Conference",
-        "done": false
+        "done": true
       }
     ]
   },
