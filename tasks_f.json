@@ -53,5 +53,15 @@
     "status": "Planned",
     "due": "2026-08-21",
     "checklist": []
+  },
+  {
+    "id": "5fea8062-14bb-4d49-aad5-08fd725bbbb3",
+    "title": "Set up the submission date for thesis",
+    "icon": "📝",
+    "priority": "Medium",
+    "tag": "",
+    "status": "Planned",
+    "due": null,
+    "checklist": []
   }
 ]
