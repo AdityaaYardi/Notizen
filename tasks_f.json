@@ -63,5 +63,15 @@
     "status": "Planned",
     "due": null,
     "checklist": []
+  },
+  {
+    "id": "7c3a4145-e7c9-466a-b491-dbe228ae03e1",
+    "title": "Excel with aktive und passive vokabel",
+    "icon": "📝",
+    "priority": "Medium",
+    "tag": "",
+    "status": "Planned",
+    "due": null,
+    "checklist": []
   }
 ]
