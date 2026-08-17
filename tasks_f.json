@@ -43,5 +43,15 @@
     "status": "Planned",
     "due": null,
     "checklist": []
+  },
+  {
+    "id": "69e7cc51-336e-4776-b9e8-ef1a74fd2fb7",
+    "title": "Amazon online assessment",
+    "icon": "📝",
+    "priority": "Medium",
+    "tag": "",
+    "status": "Planned",
+    "due": "2026-08-21",
+    "checklist": []
   }
 ]
