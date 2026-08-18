@@ -36,6 +36,10 @@
       {
         "text": "Create toc",
         "done": false
+      },
+      {
+        "text": "send it for approval",
+        "done": false
       }
     ]
   },
