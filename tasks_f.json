@@ -40,6 +40,10 @@
       {
         "text": "send it for approval",
         "done": false
+      },
+      {
+        "text": "do the needful changes",
+        "done": false
       }
     ]
   },
