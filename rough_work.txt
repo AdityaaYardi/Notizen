@@ -1,7 +1,7 @@
-colcon build --symlink-install \
-  --base-paths \
-    src \
-    support_ws/Universal_Robots_ROS2_Description \
-    support_ws/onrobot_ros2/onrobot_rg_description \
-    support_ws/ros2_net_ft_driver/net_ft_description \
-    support_ws/realsense-ros/realsense2_description
+source install/setup.bash
+
+ros2 pkg prefix realsense2_description
+ros2 pkg prefix onrobot_rg_description
+ros2 pkg prefix net_ft_description
+ros2 pkg prefix ur_description
+ros2 pkg prefix roboticsgroup_upatras_gazebo_plugins
