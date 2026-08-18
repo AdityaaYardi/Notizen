@@ -32,7 +32,12 @@
     "tag": "",
     "status": "Doing",
     "due": null,
-    "checklist": []
+    "checklist": [
+      {
+        "text": "Create toc",
+        "done": false
+      }
+    ]
   },
   {
     "id": "4ac5f084-a015-4a1d-ae20-e8293cbebd3a",
