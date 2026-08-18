@@ -73,5 +73,36 @@
     "status": "Planned",
     "due": null,
     "checklist": []
+  },
+  {
+    "id": "aa33757e-f6b5-4084-be4e-89c5aa23a8e3",
+    "title": "CV",
+    "icon": "📊",
+    "priority": "Medium",
+    "tag": "",
+    "status": "Planned",
+    "due": null,
+    "checklist": [
+      {
+        "text": "CV-update final version",
+        "done": false
+      },
+      {
+        "text": "Send it to review",
+        "done": false
+      },
+      {
+        "text": "Do suggested changes",
+        "done": false
+      },
+      {
+        "text": "send it to work laptop",
+        "done": false
+      },
+      {
+        "text": "apply",
+        "done": false
+      }
+    ]
   }
 ]
