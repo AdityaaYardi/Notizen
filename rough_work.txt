@@ -1,10 +1,8 @@
-cd ~/workspace_ur_ros2
-
-git submodule sync --recursive
-
-git submodule update --init --recursive \
-  src/support_ws/Universal_Robots_ROS2_Driver \
-  support_ws/Universal_Robots_ROS2_Description \
-  support_ws/onrobot_ros2 \
-  support_ws/ros2_net_ft_driver \
-  support_ws/realsense-ros
+rosdep install \
+  --from-paths \
+    src \
+    support_ws/Universal_Robots_ROS2_Description \
+    support_ws/onrobot_ros2/onrobot_rg_description \
+    support_ws/ros2_net_ft_driver/net_ft_description \
+    support_ws/realsense-ros/realsense2_description \
+  --ignore-src -r -y
