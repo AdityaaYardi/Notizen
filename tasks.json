@@ -104,33 +104,6 @@
     "checklist": []
   },
   {
-    "id": "9ea3431d-adb1-4523-99f2-177f47a5de53",
-    "title": "Global Network Hard Turning Dashboard",
-    "icon": "📊",
-    "priority": "High",
-    "tag": "",
-    "status": "Finished",
-    "due": null,
-    "checklist": [
-      {
-        "text": "Change Title",
-        "done": true
-      },
-      {
-        "text": "Include Plants from the Map",
-        "done": true
-      },
-      {
-        "text": "Process - > Tool cost , New (Reconditioning, Best Practice, Benchmark)",
-        "done": true
-      },
-      {
-        "text": "Contact page - Members from Hard turning Conference",
-        "done": true
-      }
-    ]
-  },
-  {
     "id": "6e4b635c-ae85-49b3-a876-8922315c79cf",
     "title": "Change TOC and Start Writing",
     "icon": "🚩",
