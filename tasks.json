@@ -149,5 +149,15 @@
     "status": "Planned",
     "due": "2026-08-16",
     "checklist": []
+  },
+  {
+    "id": "af5f0652-8bdd-454c-b646-65de04f23ade",
+    "title": "Convert Zerodha Dmat accout to NRI NRO",
+    "icon": "📣",
+    "priority": "High",
+    "tag": "Money",
+    "status": "Planned",
+    "due": null,
+    "checklist": []
   }
 ]
