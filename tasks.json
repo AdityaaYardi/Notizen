@@ -102,5 +102,15 @@
     "status": "Planned",
     "due": null,
     "checklist": []
+  },
+  {
+    "id": "0dc0ac84-6666-4fa1-b56a-73fb92d95b80",
+    "title": "Get  Clamp Controller Working in the  lab PC",
+    "icon": "🚩",
+    "priority": "High",
+    "tag": "",
+    "status": "Planned",
+    "due": null,
+    "checklist": []
   }
 ]
