@@ -74,16 +74,6 @@
     ]
   },
   {
-    "id": "2a65f24d-3802-48a8-a5e6-e5274afce1d7",
-    "title": "Get the Tape feeder 3d printed part in ROS2 repo",
-    "icon": "🚩",
-    "priority": "Low",
-    "tag": "Repair",
-    "status": "Finished",
-    "due": null,
-    "checklist": []
-  },
-  {
     "id": "6e4b635c-ae85-49b3-a876-8922315c79cf",
     "title": "Change TOC and Start Writing",
     "icon": "🚩",
