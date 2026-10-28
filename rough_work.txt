@@ -1,1 +1,18 @@
-https://youtu.be/SYt9kGocGWM?si=oYYDTgWjX-rlKTj9
+Ihre Aufgaben
+
+Entwicklung innovativer Automatisierungs-, Robotik- und KI-Lösungen für industrielle Anwendungen – von der Idee bis zum produktiven Einsatz
+Identifikation und Evaluierung neuer Technologietrends in den Bereichen Robotik, Physical AI, autonome Systeme und intelligente Automatisierung
+Entwicklung, Implementierung und Validierung von Softwarelösungen für Robotersysteme, insbesondere mit Python, ROS/ROS2 und Linux
+Konzeption und Realisierung von Demonstratoren, Prototypen und Pilotanwendungen im Umfeld moderner Robotik- und Automatisierungstechnologien
+Integration robotischer Fähigkeiten, insbesondere in den Bereichen Greifen, Manipulation, Wahrnehmung und autonome Aufgabenbearbeitung
+Nutzung von Simulations- und Digital-Twin-Technologien (NVIDIA Omniverse und Isaac Sim) zur virtuellen Absicherung neuer Konzepte
+Bewertung neuer Technologien hinsichtlich technischer Machbarkeit, Wirtschaftlichkeit und Skalierbarkeit für zukünftige Produkt- und Fertigungslösungen sowie interdisziplinäre Zusammenarbeit mit Experten 
+Ihr Profil
+Erfolgreich abgeschlossenes Studium der Robotik, Informatik, Mechatronik, Automatisierungstechnik oder einer vergleichbaren Fachrichtung
+Mehrjährige Erfahrung in der Entwicklung und Integration robotischer Anwendungen (insbesondere Kinematik, Bewegungsplanung, Sensorik und Aktorik) sowie Kenntnisse in skill-basierter Robotik
+Erste Kenntnisse im Umfeld von Produktionsprozessen, industriellen Schnittstellen sowie Maschinensicherheit
+Fundierte Programmierkenntnisse (Phyton) sowie sicherer Umgang mit gängigen Werkzeugen in der Softwareentwicklung (Linux, Docker, Git)
+Mehrjährige Erfahrung mit Simulationsumgebungen (NVIDIA Omniverse, Isaac Sim) und im Umfeld der Roboterperipherie von Vorteil
+Sehr gute Deutsch- und Englischkenntnisse in Wort und Schrift
+Selbstständige, strukturierte und lösungsorientierte Arbeitsweise verbunden mit hoher praktischer Umsetzungsorientierung
+Freude an interdisziplinärer Zusammenarbeit sowie der Entwicklung eines neuen Technologiefeldes
