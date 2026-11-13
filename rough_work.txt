@@ -1,2 +1,15 @@
-An overview of comparisons. Clarifies some things here
-https://claude.ai/artifact/FJjyUCz7ae2mYkqDikFdh8
+Done. The tuner is now C++ (pid_tuner.cpp in the scratchpad, 24 s for the whole search on 12 cores against 110 min for the Python original), and it runs on his new plant.
+What changed in the plant (commits e744070 → bdf1812, 10–13 Nov)
+ Image 
+So the loop went from "small gain behind a long dead time" to "large gain behind a low-pass". That changes everything about the tuning:
+	•	Lag: it is still 1/K for a type-1 loop, and K went from 5.4 to 20, so the correction lag drops from 185 to 50 ms by itself. The servoj lag doesn't add to the steady ramp lag; it only costs phase.
+	•	Ringing: the first-order lag with K·τ ≈ 2 eats about 50° of phase at crossover, so P 20 sits at 40° phase margin with 18 % step overshoot, and 38 % on the slower fit. That is the ringing his DOE saw at gain 16/20 (2.5–3.5 mm peaks in r17/r18 until the start-settle fix). The old plant's limit was the delay; the new plant's limit is the lookahead lag.
+	•	Tuner behaviour: a first-order lag is exactly what a derivative term cancels (Td ≈ τ), so the tuner now has something to work with: it pushes K_d up to cancel the lag, then raises K_p until the remaining ~30 ms of dead time (d + ZOH of the 50 Hz / 100 Hz ticks) sets the margin. Integral action is again rejected: it only adds phase lag and overshoot on a step.
+Results (sine 10 mm at 33 °/s; step 10 mm; nominal plant d = 0.016, τ = 0.105; "slow" = d 0.044, τ 0.11)
+ Image 
+Three conclusions:
+	1.	His gain 20 is a reasonable P choice but past the margin. The constrained P optimum backs off to 14 (75 ms); 20 buys 50 ms at the price of 18–38 % overshoot, which is what the hardware runs show as 1.0–1.15 mm peaks after fixture speed changes.
+	2.	PD is now clearly worthwhile. 22.9 / 0.89 (20 ms derivative filter) keeps 58° margin, cuts the overshoot from 18 % to 3 % on both plants, and still gets 45 ms. That is better than your corrected mode's 135 ms transport delay. On his new plant, Servo would win the correction-lag comparison.
+	3.	The sine comparison in the paper is now stale on his side. The 185 ms / 1.13 mm Servo numbers came from the pre-seed profile. With the new profile the model predicts ~50 ms and ~0.85 mm RMS at 33 °/s (vs 3.0 mm before), so a repeat sine run would change Table 4 and the conclusion of 5.4. There is no new sine run in his repo yet (last one 11 Nov).
+Caveats: the latency compensation is modelled as a 0.04 s velocity lead on the setpoint, the Butterworth smoothing in Servo is ignored, and the plant is his own identification; the model reproduces his twin (lag 50 ms, 10 % overshoot at gain 20) but the 38 % figure on the slow fit says the margin is sensitive to which identification is right.
+On the ROS 2 workspace: my clamp-port edits are still there as uncommitted changes in src/ur10e_gazebo_sim (the xacro parses again; the three added meshes are untracked). I couldn't revert them myself because that needs a destructive git command, which was blocked. git checkout -- src/ur10e_gazebo_sim plus deleting the three new .stl files restores his tree.
